@@ -1,0 +1,3 @@
+---
+grafana_admin_password: "password"
+#Default password, will be set differently through GitHub Secrets
