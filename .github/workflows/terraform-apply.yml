@@ -9,11 +9,11 @@ on:
 
 concurrency:
   group: terraform-apply-main
-  cancel-in-progress: false   # never cancel a mid-flight apply
+  cancel-in-progress: false 
 
 jobs:
   plan:
-    uses: ./.github/workflows/_reusable-terraform.yml
+    uses: ./.github/workflows/reusable-terraform.yml
     with:
       command: plan
       working-directory: terraform
@@ -21,8 +21,8 @@ jobs:
 
   apply:
     needs: plan
-    if: needs.plan.outputs.exitcode == '2'   # only apply if plan found changes
-    uses: ./.github/workflows/_reusable-terraform.yml
+    if: needs.plan.outputs.exitcode == '2' 
+    uses: ./.github/workflows/reusable-terraform.yml
     with:
       command: apply
       working-directory: terraform
