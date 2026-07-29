@@ -16,6 +16,7 @@ Create a terraform project
    - Make it possible for the inventory file to be created using the output of the Terraform using GitHub Actions
  - Create scripts for verifying and connecting to the created instances
     - Try to make example scripts for httpd, differnt software downloads, etc.
+    - Make the program work regardless of the OS that the nodes have been created with. Start with Amazon Linux.
  - Try to make the project as easy to modify as possible. Variable files, etc.
     - Host names for nodes should be easily marked and detailed instructions for modification should be available in the README.md
  - Attach monitoring software such as Grafana or Prometheus.
