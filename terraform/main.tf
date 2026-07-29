@@ -15,7 +15,7 @@ variable "aws_region" {
 
 variable "state_bucket_name" {
   type        = string
-  description = "Globally-unique S3 bucket name for Terraform state, e.g. networking-capstone-tfstate-<yourname>"
+  description = "Globally-unique S3 bucket name for Terraform state, e.g. networking-capstone-tfstate-beck"
 }
 
 variable "lock_table_name" {
@@ -30,7 +30,7 @@ provider "aws" {
 resource "aws_s3_bucket" "tf_state" {
   bucket = var.state_bucket_name
 
-  # Prevent accidental deletion of a bucket holding live infra state
+
   lifecycle {
     prevent_destroy = true
   }

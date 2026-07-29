@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket         = "REPLACE_WITH_YOUR_STATE_BUCKET"
+    bucket         = "beck-networking-capstone-tfstate-2026"
     key            = "networking-capstone/terraform.tfstate"
     region         = "us-west-1"
     dynamodb_table = "networking-capstone-tf-locks"
