@@ -13,6 +13,7 @@ Create a terraform project
 ## Ansible Project
  - Create and connect various nodes.
    - Detail where the inventory file can be changed incase the node's ip changes
+   - Make it possible for the inventory file to be created using the output of the Terraform using GitHub Actions
  - Create scripts for verifying and connecting to the created instances
     - Try to make example scripts for httpd, differnt software downloads, etc.
  - Try to make the project as easy to modify as possible. Variable files, etc.
@@ -31,3 +32,5 @@ Create a terraform project
  - Create a slide deck for the in-person presentation.
  - Either get the project working on a laptop for use in the presentation or create a video of how the project functions.
    - A video might need to be editted as Terraform can be very slow when being run
+  
+ pptx link : https://onedrive.live.com/:p:/g/personal/2dc866dcd3e1fe1d/IQCzgyaUMomDQZJtofj93lLDATa5H89nk-nIbJanmtNGYMY?rtime=_v-9K4Dt3kg&redeem=aHR0cHM6Ly8xZHJ2Lm1zL3AvYy8yZGM4NjZkY2QzZTFmZTFkL0lRQ3pneWFVTW9tRFFaSnRvZmo5M2xMREFUYTVIODluay1uSWJKYW5tdE5HWU1ZP2U9Q1ZyZFcz
