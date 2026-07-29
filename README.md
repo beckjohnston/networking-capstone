@@ -47,6 +47,11 @@ Create a terraform project
  - Grafana password must be stored in GitHub secrets and called manually from GitHub Actions.
       ansible-playbook -i inventory_file playbook.yml -e "grafana_admin_password=password"
 
+#### Prometheus
+
+ - Creates an instance of Prometheus on the targeted node. 
+ - Must be configured with Bastion to be able to scrape from VPC 1
+
 #### Bastion
 
  - Creates a link between a preapproved node and the targeted node regardless of whether they are on the same VPC.
