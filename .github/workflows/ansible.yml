@@ -1,0 +1,88 @@
+name: Ansible
+
+on:
+  pull_request:
+    branches: [ main ]
+    inputs:
+      playbook:
+        description: "Playbook to run (relative to ansible/playbooks/)"
+        required: true
+        default: "verify_connectivity.yml"
+
+permissions:
+  contents: read
+
+env:
+  KEY_PATH: /tmp/capstone-key.pem
+  SSM_KEY_PARAMETER: /capstone/dev/ssh-key
+
+jobs:
+  run-playbook:
+    name: Run Playbook
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Fetch SSH key from SSM Parameter Store
+        run: |
+          aws ssm get-parameter \
+            --name "${{ env.SSM_KEY_PARAMETER }}" \
+            --with-decryption \
+            --query "Parameter.Value" \
+            --output text > ${{ env.KEY_PATH }}
+          chmod 400 ${{ env.KEY_PATH }}
+
+      - name: Install Ansible and AWS collection
+        run: |
+          pip install ansible boto3 botocore
+          ansible-galaxy collection install amazon.aws community.docker
+
+      - name: Dry-run diff 
+        id : ansible
+        continue-on-error: true
+        run : |
+            OUTPUT=$(ansible-playbook --check --diff \
+              -i ansible/inventory/aws_ec2.yml \
+              -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
+              ansible/playbooks/${{ github.event.inputs.playbook }})
+      
+      - name: Post dry run to PR
+        uses: actions/github-script@v7
+        with: 
+          script: |
+            const output = `${{ steps.ansible.outputs.ansible_output }}`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: output,
+              });
+
+      - name: Run playbook
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_CONFIG: ansible/ansible.cfg
+        run: |
+          ansible-playbook \
+            -i ansible/inventory/aws_ec2.yml \
+            -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
+            ansible/playbooks/${{ github.event.inputs.playbook }}
+
+      - name: Clean up key
+        if: always()
+        run: rm -f ${{ env.KEY_PATH }}
