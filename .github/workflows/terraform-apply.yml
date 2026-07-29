@@ -1,0 +1,30 @@
+name: Terraform Apply (main)
+
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "terraform/**"
+
+concurrency:
+  group: terraform-apply-main
+  cancel-in-progress: false   # never cancel a mid-flight apply
+
+jobs:
+  plan:
+    uses: ./.github/workflows/_reusable-terraform.yml
+    with:
+      command: plan
+      working-directory: terraform
+    secrets: inherit
+
+  apply:
+    needs: plan
+    if: needs.plan.outputs.exitcode == '2'   # only apply if plan found changes
+    uses: ./.github/workflows/_reusable-terraform.yml
+    with:
+      command: apply
+      working-directory: terraform
+      environment: production
+    secrets: inherit

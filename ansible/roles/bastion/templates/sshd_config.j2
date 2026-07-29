@@ -1,0 +1,37 @@
+# roles/bastion/templates/sshd_config.j2 - Hardened SSH configuration
+Port {{ bastion_ssh_port }}
+HostKey /etc/ssh/ssh_host_ed25519_key
+HostKey /etc/ssh/ssh_host_rsa_key
+
+# Authentication settings
+PermitRootLogin {{ 'yes' if bastion_ssh_root_login else 'no' }}
+PasswordAuthentication {{ 'yes' if bastion_ssh_password_auth else 'no' }}
+PubkeyAuthentication yes
+MaxAuthTries {{ bastion_ssh_max_auth_tries }}
+AuthenticationMethods publickey
+
+# Session settings
+ClientAliveInterval {{ bastion_ssh_client_alive_interval }}
+ClientAliveCountMax {{ bastion_ssh_client_alive_count_max }}
+MaxSessions 5
+MaxStartups 10:30:60
+
+# Disable unnecessary features
+X11Forwarding no
+PrintMotd yes
+PermitTunnel no
+GatewayPorts no
+
+# Allow TCP forwarding for SSH jump functionality
+AllowTcpForwarding yes
+PermitOpen any
+
+# Restrict to bastion users only
+AllowUsers {{ bastion_users | map(attribute='name') | join(' ') }}
+
+# Logging
+LogLevel VERBOSE
+SyslogFacility AUTH
+
+# Banner
+Banner /etc/ssh/banner.txt

@@ -1,0 +1,22 @@
+name: Terraform PR Plan
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform-pr.yml"
+      - ".github/workflows/_reusable-terraform.yml"
+
+concurrency:
+  group: terraform-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  plan:
+    uses: ./.github/workflows/_reusable-terraform.yml
+    with:
+      command: plan
+      working-directory: terraform
+      post-pr-comment: true
+    secrets: inherit
