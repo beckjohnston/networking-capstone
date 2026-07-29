@@ -1,0 +1,45 @@
+---
+- name: Install Docker and Python Docker SDK
+  ansible.builtin.dnf:
+    name:
+      - docker
+      - python3-docker
+    state: present
+
+- name: Start and enable Docker
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Clear dnf cache to free space before image pull
+  ansible.builtin.command: dnf clean all
+  changed_when: false
+
+- name: Create grafana provisioning directory
+  ansible.builtin.file:
+    path: /etc/grafana/provisioning/datasources
+    state: directory
+    mode: "0755"
+
+- name: Write Prometheus datasource provisioning
+  ansible.builtin.template:
+    src: datasource.yml.j2
+    dest: /etc/grafana/provisioning/datasources/prometheus.yml
+    mode: "0644"
+  notify: Restart grafana
+
+- name: Run grafana container
+  community.docker.docker_container:
+    name: grafana
+    image: grafana/grafana:latest
+    state: started
+    restart_policy: always
+    ports:
+      - "3000:3000"
+    env:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: "{{ grafana_admin_password }}"
+    volumes:
+      - "/etc/grafana/provisioning:/etc/grafana/provisioning:ro,z"
+      - "grafana_data:/var/lib/grafana"

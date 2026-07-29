@@ -41,6 +41,11 @@ Create a terraform project
 
 ### Ansible
 
+#### Grafana
+
+ - Creates an instance of Grafana on the targeted node. Must be utilized with Prometheus.
+ - Grafana password must be stored in GitHub secrets and called manually from GitHub Actions.
+      ansible-playbook -i inventory_file playbook.yml -e "grafana_admin_password=password"
 
 #### Bastion
 
