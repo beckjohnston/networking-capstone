@@ -6,7 +6,7 @@ on:
     paths:
       - "terraform/**"
       - ".github/workflows/terraform-pr.yml"
-      - ".github/workflows/_reusable-terraform.yml"
+      - ".github/workflows/reusable-terraform.yml"
 
 concurrency:
   group: terraform-pr-${{ github.event.pull_request.number }}
@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   plan:
-    uses: ./.github/workflows/_reusable-terraform.yml
+    uses: ./.github/workflows/reusable-terraform.yml
     with:
       command: plan
       working-directory: terraform
