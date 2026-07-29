@@ -1,0 +1,35 @@
+---
+# Runs on the bastion (public instance) - no ProxyJump needed.
+# Writes local.database.app -> private instance IP in /etc/hosts,
+# then verifies TCP reachability with nc. The bastion reaches the private
+# instance over normal VPC routing, demonstrating the private subnet pattern.
+#
+# How to run:
+#   ansible-playbook -i ansible/inventory/aws_ec2.yml ansible/playbooks/verify_connectivity.yml
+
+- name: Verify connectivity to private instance
+  hosts: tag_Role_bastion
+  gather_facts: false
+  become: true
+
+  vars:
+    private_ip: "{{ groups['tag_Role_private_app'] | first }}"
+
+  tasks:
+    - name: Add local.database.app to /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: 'local\.database\.app'
+        line: "{{ private_ip }} local.database.app"
+        state: present
+
+    - name: Test TCP connectivity to local.database.app on port 22
+      ansible.builtin.wait_for:
+        host: local.database.app
+        port: 22
+        timeout: 10
+        state: started
+
+    - name: Show result
+      ansible.builtin.debug:
+        msg: "bastion -> local.database.app ({{ private_ip }}):22 - OK"
