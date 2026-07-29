@@ -1,6 +1,8 @@
 name: Ansible
 
 on:
+  workflow_dispatch: 
+    branches : [ test ]
   pull_request:
     branches: [ main ]
     inputs:
