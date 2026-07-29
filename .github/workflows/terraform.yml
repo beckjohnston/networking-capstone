@@ -36,7 +36,10 @@ jobs:
   terraform-plan:
     name: Plan
     runs-on: ubuntu-latest
-    if: github.event.inputs.action == 'plan'
+    if: >
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply'))
     defaults:
       run:
         working-directory: ${{ env.WORKING_DIR }}
