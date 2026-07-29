@@ -2,7 +2,16 @@ name: Terraform
 
 on:
   workflow_dispatch: 
-    branches: [ test ]
+    inputs:
+      action:
+        description: "plan, apply or destroy"
+        required: true
+        default: "apply"
+        type: choice
+        options:
+          - apply
+          - destroy
+          - plan
   pull_request:
     branches: [ main ]
     inputs:
