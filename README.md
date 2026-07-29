@@ -17,7 +17,8 @@ Create a terraform project
  - Attach monitoring software such as Grafana or Prometheus.
 
 ## GitHub Action - CI/CD
-Create GitHub Action files
+ - Configure the workflow to be triggered by a pull request
+ - Perform a dry run in terraform and ansible before applying changes
 
 ## Presentation Work
 Create Presentation
