@@ -65,7 +65,8 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -input=false -var="grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" | tee /tmp/tfplan.txt
+        run: terraform plan -input=false | tee /tmp/tfplan.txt
+        #run: terraform plan -input=false -var="grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" | tee /tmp/tfplan.txt
 
       - name: Post Plan to Summary
         run: cat /tmp/tfplan.txt >> $GITHUB_STEP_SUMMARY
@@ -121,7 +122,8 @@ jobs:
         run: terraform validate
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false -var="grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}"
+        run: terraform plan -input=false | tee /tmp/tfplan.txt
+        #run: terraform apply -auto-approve -input=false -var="grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}"
 
   terraform-destroy:
     name: Destroy
