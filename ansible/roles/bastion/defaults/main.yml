@@ -1,0 +1,22 @@
+# roles/bastion/defaults/main.yml - Bastion host configuration
+
+bastion_ssh_port: 22
+bastion_allowed_ssh_cidrs:
+  - 10.0.0.0/16
+
+# Users allowed to SSH through the bastion
+bastion_users:
+  - name: vpc2-user
+    ssh_key: "ssh-rsa AAAAB3... vpc2@prod"
+
+# SSH hardening settings
+bastion_ssh_password_auth: false
+bastion_ssh_root_login: false
+bastion_ssh_max_auth_tries: 3
+bastion_ssh_client_alive_interval: 300
+bastion_ssh_client_alive_count_max: 2
+
+# Fail2ban settings
+bastion_fail2ban_maxretry: 5
+bastion_fail2ban_bantime: 3600
+bastion_fail2ban_findtime: 600
