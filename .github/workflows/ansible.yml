@@ -16,7 +16,8 @@ permissions:
 
 env:
   KEY_PATH: /tmp/capstone-key.pem
-  SSM_KEY_PARAMETER: /capstone/dev/ssh-key
+  SSM_KEY_PRIMARY_PARAMETER: /capstone/dev/ssh-key
+  SSM_KEY_FALLBACK_PARAMETER: /capstone/test/ssh-key
 
 jobs:
   run-playbook:
@@ -35,11 +36,21 @@ jobs:
 
       - name: Fetch SSH key from SSM Parameter Store
         run: |
-          aws ssm get-parameter \
-            --name "${{ env.SSM_KEY_PARAMETER }}" \
-            --with-decryption \
-            --query "Parameter.Value" \
-            --output text > ${{ env.KEY_PATH }}
+          for parameter_name in "${{ env.SSM_KEY_PRIMARY_PARAMETER }}" "${{ env.SSM_KEY_FALLBACK_PARAMETER }}"; do
+            if aws ssm get-parameter \
+              --name "${parameter_name}" \
+              --with-decryption \
+              --query "Parameter.Value" \
+              --output text > "${{ env.KEY_PATH }}" 2>/dev/null; then
+              break
+            fi
+          done
+
+          if [ ! -s "${{ env.KEY_PATH }}" ]; then
+            echo "No SSH key parameter found in SSM Parameter Store." >&2
+            exit 1
+          fi
+
           chmod 400 ${{ env.KEY_PATH }}
 
       - name: Install Ansible and AWS collection
