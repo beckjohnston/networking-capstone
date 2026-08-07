@@ -83,3 +83,14 @@ output "prometheus_private_ip" {
 output "router_public_ip" {
   value = aws_instance.router.public_ip
 }
+
+output "transit_gateway_id" {
+
+  value = aws_ec2_transit_gateway.main.id
+}
+
+
+output "transit_gateway_asn" {
+
+  value = aws_ec2_transit_gateway.main.amazon_side_asn
+}
