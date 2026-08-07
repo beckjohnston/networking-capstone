@@ -3,6 +3,11 @@ name: Ansible
 on:
   workflow_dispatch: 
     branches : [ test ]
+    inputs:
+      playbook:
+        description: "Playbook to run (relative to ansible/playbooks/)"
+        required: true
+        default: "verify_connectivity.yml"
   pull_request:
     branches: [ main ]
     inputs:
@@ -14,9 +19,9 @@ on:
 permissions:
   contents: read
 
-env:
-  KEY_PATH: /tmp/capstone-key.pem
-  SSM_KEY_PARAMETER: /capstone/dev/ssh-key
+#env:
+#  KEY_PATH: /tmp/capstone-key.pem
+#  SSM_KEY_PARAMETER: /capstone/dev/ssh-key
 
 jobs:
   run-playbook:
@@ -33,14 +38,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Fetch SSH key from SSM Parameter Store
-        run: |
-          aws ssm get-parameter \
-            --name "${{ env.SSM_KEY_PARAMETER }}" \
-            --with-decryption \
-            --query "Parameter.Value" \
-            --output text > ${{ env.KEY_PATH }}
-          chmod 400 ${{ env.KEY_PATH }}
+#      - name: Fetch SSH key from SSM Parameter Store
+#        run: |
+#          aws ssm get-parameter \
+#            --name "${{ env.SSM_KEY_PARAMETER }}" \
+#            --with-decryption \
+#            --query "Parameter.Value" \
+#            --output text > ${{ env.KEY_PATH }}
+#          chmod 400 ${{ env.KEY_PATH }}
+
+      - name: configure permissions for SSH key
+        run: chmod 400 ${{ secrets.EC2_INSTANCES_PRIVATE_KEY }}
 
       - name: Install Ansible and AWS collection
         run: |
@@ -53,7 +61,7 @@ jobs:
         run : |
             OUTPUT=$(ansible-playbook --check --diff \
               -i ansible/inventory/aws_ec2.yml \
-              -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
+              -e "ansible_ssh_private_key_file=${{ secrets.EC2_INSTANCES_PRIVATE_KEY }}" \
               ansible/playbooks/${{ github.event.inputs.playbook }})
       
       - name: Post dry run to PR
