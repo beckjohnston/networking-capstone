@@ -1,0 +1,26 @@
+---
+# Sends and runs the router_config.j2 configuration to the Cisco Catalyst 8000V router located in VPC3
+# Host is tagged in terraform with Role = router
+#
+# How to run:
+#   ansible-playbook \
+#     -i ansible/inventory/aws_ec2.yml \
+#     -e "ansible_ssh_private_key_file=/tmp/capstone-key.pem" \
+#     -e INSERT TARGET IPS HERE \
+#     ansible/playbooks/router_config.yml
+
+- name: Render and deploy per-router configuration
+  hosts: tag_Role_router
+  gather_facts: false
+
+  tasks:
+
+    - name: Render base config from template
+      ansible.builtin.template:
+        src: templates/router_config.j2
+        dest: "/tmp/{{ inventory_hostname }}.cfg"
+      delegate_to: localhost
+
+    - name: Push rendered config to the device
+      cisco.ios.ios_config:
+        src: "/tmp/{{ inventory_hostname }}.cfg"
