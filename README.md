@@ -56,34 +56,37 @@ Create a terraform project
 
 ##### install_observability
 
- - Installs various packages on the targeted nodes. Bastion, Prometheus, Grafana. In that order
-   
+ - Installs various packages on the targeted nodes. Bastion, Prometheus, Grafana in that order
+```
    ansible-playbook \
       -i ansible/inventory/aws_ec2.yml \
       -e "ansible_ssh_private_key_file=/tmp/capstone-key.pem" \
       -e "grafana_admin_password=<your-password>" \
       ansible/playbooks/install_observability.yml
+```
 
  - Command should be using the inventory file that queries the AWS account. 
- - The ssh private key will need to be retirieved form the output of the terraform file
- - The grafana password will need to be retrieved form the GitHub Secrets in order to be secure
+ - The ssh private key will need to be retrieved from the output of the terraform file
+ - The grafana password will need to be retrieved from the GitHub Secrets in order to be secure
 
 ##### verify_connectivity
 
- - Tests the connectivity between the public bastion instance and the private application instances.
- 
+ - Tests the connectivity between the public Bastion instance and the private application instances.
+ ```
    ansible-playbook -i ansible/inventory/aws_ec2.yml ansible/playbooks/verify_connectivity.yml
-
+```
  - Runs based on the inventory file that queries the AWS account associated with terraform
 
 ##### router_config
  - Imports and runs the router_config.j2 template onto the Cisco Catalyst 8000V router.
 
+```
    ansible-playbook \
       -i ansible/inventory/aws_ec2.yml \
       -e "ansible_ssh_private_key_file=/tmp/capstone-key.pem" \
       -e **INSERT VARIABLES HERE** \
       ansible/playbooks/router_config.yml
+```
 
  - Requires the following parameters in order to properly set up the BGP tunnel 
  **INSERT PARAMETERS FROM BGP DOCUMENTATION**
