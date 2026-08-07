@@ -72,6 +72,20 @@ Create a terraform project
 
  - Runs based on the inventory file that queries the AWS account associated with terraform
 
+##### router_config
+ - Imports and runs the router_config.j2 template onto the Cisco Catalyst 8000V router.
+
+   ansible-playbook \
+      -i ansible/inventory/aws_ec2.yml \
+      -e "ansible_ssh_private_key_file=/tmp/capstone-key.pem" \
+      -e **INSERT VARIABLES HERE** \
+      ansible/playbooks/router_config.yml
+
+ - Requires the following parameters in order to properly set up the BGP tunnel 
+ **INSERT PARAMETERS FROM BGP DOCUMENTATION**
+
+ - See **LINK TO BGP DOCUMENTATION** for details on the implementation of router_config.j2
+
 #### Roles
 
 ##### Grafana
