@@ -33,3 +33,53 @@ output "observability_private_subnet_id" {
 output "network_public_subnet_id" {
   value = aws_subnet.network_public.id
 }
+
+
+output "bastion_security_group_id" {
+  description = "Security group ID for bastion host"
+  value       = aws_security_group.bastion.id
+}
+
+output "app_security_group_id" {
+  description = "Security group ID for private application servers"
+  value       = aws_security_group.app.id
+}
+
+output "grafana_security_group_id" {
+  description = "Security group ID for Grafana"
+  value       = aws_security_group.grafana.id
+}
+
+output "prometheus_security_group_id" {
+  description = "Security group ID for Prometheus"
+  value       = aws_security_group.prometheus.id
+}
+
+output "router_security_group_id" {
+  description = "Security group ID for router"
+  value       = aws_security_group.router.id
+}
+
+output "bastion_public_ip" {
+  value = aws_instance.bastion.public_ip
+}
+
+output "app_private_1_ip" {
+  value = aws_instance.app_private_1.private_ip
+}
+
+output "app_private_2_ip" {
+  value = aws_instance.app_private_2.private_ip
+}
+
+output "grafana_public_ip" {
+  value = aws_instance.grafana.public_ip
+}
+
+output "prometheus_private_ip" {
+  value = aws_instance.prometheus.private_ip
+}
+
+output "router_public_ip" {
+  value = aws_instance.router.public_ip
+}

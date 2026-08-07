@@ -9,3 +9,8 @@ variable "vpc2_cidr" {
 variable "vpc3_cidr" {
   default = "10.2.0.0/16"
 }
+
+variable "key_name" {
+  description = "EC2 key pair name"
+  type        = string
+}
