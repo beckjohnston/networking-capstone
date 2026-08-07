@@ -47,10 +47,12 @@ jobs:
 #            --output text > ${{ env.KEY_PATH }}
 #          chmod 400 ${{ env.KEY_PATH }}
 
-      - name: create SSH key file and configure permissions
+      - name: configure ssh key and permissions
+        env: SSH_KEY: ${{ secrets.SSH_KEY }}
         run: |
-          echo ${{ secrets.EC2_INSTANCES_PRIVATE_KEY }} >> ssh-key.pem
-          chmod 400 ssh-key.pem
+          mkdir -p ~./ssh
+          echo "$SSH_KEY" > ~/.ssh/key.pem
+          chmod 400 ~/.ssh/key.pem
 
   
       - name: Install Ansible and AWS collection
@@ -64,7 +66,7 @@ jobs:
         run : |
             OUTPUT=$(ansible-playbook --check --diff \
               -i ansible/inventory/aws_ec2.yml \
-              -e "ansible_ssh_private_key_file=ssh-key.pem" \
+              -e "ansible_ssh_private_key_file=~/.ssh/key.pem" \
               ansible/playbooks/${{ github.event.inputs.playbook }})
       
       - name: Post dry run to PR
@@ -93,7 +95,7 @@ jobs:
         run: |
           ansible-playbook \
             -i ansible/inventory/aws_ec2.yml \
-            -e "ansible_ssh_private_key_file=ssh-key.pem" \
+            -e "ansible_ssh_private_key_file=~/.ssh/key.pem" \
             ansible/playbooks/${{ github.event.inputs.playbook }}
 
       - name: Clean up key
