@@ -1,4 +1,4 @@
-hostname {{ inventory_hostname }}
+hostname router
 !
 boot-start-marker
 boot-end-marker
@@ -112,7 +112,7 @@ crypto ipsec profile ipsec-vpn-aws
  set pfs group2
 !
 interface Tunnel1
- description vpn-0f56b2afc60b1d492 from TGW to cgw-00d8fbb76cc59295e for account 902347396780
+ description vpn-0f56b2afc60b1d492 from TGW to cgw-00d8fbb76cc59295e
  ip vrf forwarding vpn-0f56b2afc60b1d492
  ip address 169.254.185.70 255.255.255.252
  ip tcp adjust-mss 1387
@@ -123,7 +123,7 @@ interface Tunnel1
  ip virtual-reassembly
 !
 interface Tunnel2
- description vpn-0f56b2afc60b1d492 from TGW to cgw-00d8fbb76cc59295e for account 902347396780
+ description vpn-0f56b2afc60b1d492 from TGW to cgw-00d8fbb76cc59295e
  ip vrf forwarding vpn-0f56b2afc60b1d492
  ip address 169.254.232.90 255.255.255.252
  ip tcp adjust-mss 1387
@@ -151,14 +151,14 @@ router bgp 64525
  bgp log-neighbor-changes
  !
  address-family ipv4 vrf vpn-0f56b2afc60b1d492
-  neighbor 169.254.185.69 remote-as 64526
+  neighbor 169.254.185.69 remote-as {{ transit_gateway_asn }}
   neighbor 169.254.185.69 timers 10 30 30
   neighbor 169.254.185.69 activate
   neighbor 169.254.185.69 next-hop-self
   neighbor 169.254.185.69 default-originate
   neighbor 169.254.185.69 as-override
   neighbor 169.254.185.69 soft-reconfiguration inbound
-  neighbor 169.254.232.89 remote-as 64526
+  neighbor 169.254.232.89 remote-as {{ transit_gateway_asn }}
   neighbor 169.254.232.89 timers 10 30 30
   neighbor 169.254.232.89 activate
   neighbor 169.254.232.89 next-hop-self
