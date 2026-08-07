@@ -1,6 +1,7 @@
 # networking-capstone
 ## Network Infrastructure
-<img width="731" height="380" alt="image" src="https://github.com/user-attachments/assets/a41ec753-655c-4fff-96ab-ed50b9738730" />
+<img width="1042" height="725" alt="Screenshot 2026-08-07 143217" src="https://github.com/user-attachments/assets/23d8c65a-3e75-40ec-810b-17548736b21a" />
+
 
 
 ## To Do
@@ -131,4 +132,4 @@ Transit ASN: 64512
   
  pptx link : https://onedrive.live.com/:p:/g/personal/2dc866dcd3e1fe1d/IQCzgyaUMomDQZJtofj93lLDATa5H89nk-nIbJanmtNGYMY?rtime=_v-9K4Dt3kg&redeem=aHR0cHM6Ly8xZHJ2Lm1zL3AvYy8yZGM4NjZkY2QzZTFmZTFkL0lRQ3pneWFVTW9tRFFaSnRvZmo5M2xMREFUYTVIODluay1uSWJKYW5tdE5HWU1ZP2U9Q1ZyZFcz
 
-diagram link: https://lucid.app/lucidspark/e76ce0b0-7f29-45a7-ae42-e110fac401b8/edit?invitationId=inv_f5e39814-dfb6-4755-9647-ad31873c111e
+diagram link: https://lucid.app/lucidspark/e76ce0b0-7f29-45a7-ae42-e110fac401b8/edit?viewport_loc=-923%2C-602%2C1380%2C1313%2C0_0&invitationId=inv_f5e39814-dfb6-4755-9647-ad31873c111e
