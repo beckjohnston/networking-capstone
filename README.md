@@ -6,6 +6,7 @@
  - Ansible files
  - GitHub Actions/CI CD
  - Presentation work
+ - Create a diagram for the README/presentation
 
 ### Terraform Project
 Create a terraform project
