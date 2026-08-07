@@ -125,23 +125,24 @@ resource "aws_instance" "prometheus" {
 
 # VPC 3 - Network Router
 
-
 resource "aws_instance" "router" {
-  ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t2.micro"
+  ami           = "ami-0be014c32727a2444"
+  instance_type = "c5.large"
 
   subnet_id = aws_subnet.network_public.id
+
+  key_name = "capstone-key"
 
   vpc_security_group_ids = [
     aws_security_group.router.id
   ]
 
-  key_name = var.key_name
-
   associate_public_ip_address = true
 
+  source_dest_check = false
+
   tags = {
-    Name = "router"
+    Name = "catalyst-router"
     Role = "router"
   }
 }
