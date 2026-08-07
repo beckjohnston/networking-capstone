@@ -12,27 +12,27 @@ Create a terraform project
 
 ### Ansible Project
  - Create and connect various nodes.
-   - Detail where the inventory file can be changed incase the node's ip changes
-   - Make it possible for the inventory file to be created using the output of the Terraform using GitHub Actions
+   - Detail where the inventory file can be changed in case the node's IP changes
+   - Make it possible to create the inventory file using the Terraform output via GitHub Actions
  - Create scripts for verifying and connecting to the created instances
-    - Try to make example scripts for httpd, differnt software downloads, etc.
-    - Make the program work regardless of the OS that the nodes have been created with. Start with Amazon Linux.
+    - Try to make example scripts for httpd, different software downloads, etc.
+    - Make the program OS agnostic. Start with compatibility with Amazon Linux.
  - Try to make the project as easy to modify as possible. Variable files, etc.
-    - Host names for nodes should be easily marked and detailed instructions for modification should be available in the README.md
+    - Host names for nodes should be easily marked and detailed instructions for modification should be available in the README.md.
  - Attach monitoring software such as Grafana or Prometheus.
-    - Find a way to install the sofware using Docker onto the nodes.
-    - Note the exact url necessary for accessing the sofware in the README.md file
+    - Find a way to install the software onto the nodes using Docker.
+    - Note the exact URL necessary for accessing the software in the README.md file.
 
 ### GitHub Action - CI/CD
- - Configure the workflow to be triggered by a pull request
- - Perform a dry run in terraform and ansible before applying changes
+ - Configure the workflow to be triggered by a pull request.
+ - Perform a dry run in Terraform and Ansible prior to applying changes.
 
 ### Presentation Work
  - Finalize the README.md file with detailed descriptions for the use of all features.
    - Highlight how to modify the Terraform and Ansible files based on varying needs or changes
  - Create a slide deck for the in-person presentation.
  - Either get the project working on a laptop for use in the presentation or create a video of how the project functions.
-   - A video might need to be editted as Terraform can be very slow when being run
+   - A video might need to be edited as Terraform can be very slow when being run
 
 
 ## Documentation
@@ -41,10 +41,9 @@ Create a terraform project
 
 ### Ansible
 
-
 #### Inventory
 
- - The inventory file automatically cahnges based on the instances configured in the targeted AWS account
+ - The inventory file automatically changes based on the instances configured in the targeted AWS account
  - Need to query AWS for the targeted hosts based off of the tags provided at initialization of the instances.
  - Also possible to query through GitHub Action, however that has limited use.
 
@@ -93,7 +92,19 @@ Create a terraform project
 
 ### GitHub Actions
 
+#### ansible.yml
+ - Triggered by a pull request on the main branch for automated deployment.
+ - Manually triggered on the test branch for debugging.
+ - Performs a dry run and posts output as a comment in the pull request.
+ - Runs the ansible playbooks.
 
+#### terraform.yml
+- Triggered by a pull request on the main branch for automated deployment.
+- Manually triggered on the test branch for debugging.
+- Takes input of plan, apply, or destroy to determine which terraform command to run.
+- Posts terraform plan output as a comment in the pull request before applying changes.
+- Runs terraform init and validate before planning or applying.
+- Allows for a terraform destroy option for the clean deletion of resources.
 
 
 
