@@ -6,14 +6,27 @@
 #   ansible-playbook \
 #     -i ansible/inventory/aws_ec2.yml \
 #     -e "ansible_ssh_private_key_file=/tmp/capstone-key.pem" \
-#     -e INSERT TARGET IPS HERE \
 #     ansible/playbooks/router_config.yml
+#
+# **MUST HAVE output.json LOCATED IN THE ansible/group_vars/all FOLDER** 
+# - see README for how and where to store the output.json from Terraform
 
 - name: Render and deploy per-router configuration
   hosts: tag_Role_router
   gather_facts: false
 
   tasks:
+
+    - name: Check if JSON file exists
+      stat:
+        path: "./ansible/group_vars/all/output.json"
+      register: json_file_status
+      delegate_to: localhost
+
+    - name: Fail if JSON file is missing
+      fail:
+        msg: "output.json not found in ./ansible/group_vars/all"
+      when: not json_file_status.stat.exists
 
     - name: Render base config from template
       ansible.builtin.template:
