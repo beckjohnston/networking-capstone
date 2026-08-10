@@ -1,6 +1,6 @@
 plugin: amazon.aws.aws_ec2
 regions:
-  - us-east-1
+  - us-west-1
 
 # Filter to only instances belonging to this project (set by Terraform default_tags)
 filters:
