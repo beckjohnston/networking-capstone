@@ -6,7 +6,7 @@
 # How to run:
 #   ansible-playbook \
 #     -i ansible/inventory/aws_ec2.yml \
-#     -e "ansible_ssh_private_key_file={{ EC2_INSTANCES_PRIVATE_KEY }}" \
+#     -e "ansible_ssh_private_key_file=${{ secrets.EC2_INSTANCES_PRIVATE_KEY }}" \
 #     -e "grafana_admin_password=<your-password>" \
 #     ansible/playbooks/install_observability.yml
 
@@ -32,15 +32,3 @@
     prometheus_ip: "{{ hostvars[groups['tag_Role_prometheus'][0]]['private_ip_address'] }}"
   roles:
     - grafana
-
-- name: Stack endpoints
-  hosts: localhost
-  connection: local
-  gather_facts: false
-  tasks:
-    - name: Print access URLs
-      ansible.builtin.debug:
-        msg:
-          - "Grafana:    http://{{ groups['tag_Role_grafana'][0] }}:3000"
-          - "Prometheus: http://{{ groups['tag_Role_prometheus'][0] }}:9090"
-          - "Credentials: admin / {{ grafana_admin_password | default('changeme') }}"

@@ -60,7 +60,7 @@ Create a terraform project
 ```
    ansible-playbook \
       -i ansible/inventory/aws_ec2.yml \
-      -e "ansible_ssh_private_key_file={{ EC2_INSTANCES_PRIVATE_KEY }}" \
+      -e "ansible_ssh_private_key_file=${{ secrets.EC2_INSTANCES_PRIVATE_KEY }}" \
       -e "grafana_admin_password=<your-password>" \
       ansible/playbooks/install_observability.yml
 ```
@@ -83,13 +83,12 @@ Create a terraform project
 ```
    ansible-playbook \
       -i ansible/inventory/aws_ec2.yml \
-      -e "ansible_ssh_private_key_file={{ EC2_INSTANCES_PRIVATE_KEY }}" \
-      -e **INSERT VARIABLES HERE** \
+      -e "ansible_ssh_private_key_file=${{ secrets.EC2_INSTANCES_PRIVATE_KEY }}" \
       ansible/playbooks/router_config.yml
 ```
 
- - Requires the following parameters in order to properly set up the BGP tunnel 
- **INSERT PARAMETERS FROM BGP DOCUMENTATION**
+ - Requires the following parameters from the terraform outputs to be able to run.
+      - 
 
  - See **LINK TO BGP DOCUMENTATION** for details on the implementation of router_config.j2
 
