@@ -2,7 +2,6 @@ name: Ansible
 
 on:
   workflow_dispatch: 
-    branches : [ test ]
     inputs:
       playbook:
         description: "Playbook to run (relative to ansible/playbooks/)"
@@ -69,8 +68,11 @@ jobs:
         run : |
             OUTPUT=$(ansible-playbook --check --diff \
               -i ansible/inventory/aws_ec2.yml \
-              -e "ansible_ssh_private_key_file=~/.ssh/key.pem" \
-              ansible/playbooks/${{ github.event.inputs.playbook }})
+              -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
+              ansible/playbooks/${{ github.event.inputs.playbook }}) || true
+              echo "ansible_output<<EOF" >> $GITHUB_OUTPUT
+              echo "$OUTPUT" >> "GITHUB_OUTPUT
+              echo "EOF" >> $GITHUB_OUTPUT
       
       - name: Post dry run to PR
         if: github.event_name == 'pull_request'
@@ -100,7 +102,7 @@ jobs:
         run: |
           ansible-playbook \
             -i ansible/inventory/aws_ec2.yml \
-            -e "ansible_ssh_private_key_file=~/.ssh/key.pem" \
+            -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
             ansible/playbooks/${{ github.event.inputs.playbook }}
 
       - name: Run install observability
@@ -111,7 +113,7 @@ jobs:
         run: |
           ansible-playbook \
           -i ansible/inventory/aws_ec2.yml \
-          -e "ansible_ssh_private_key_file=~/.ssh/key.pem" \
+          -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
           -e "grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" \
           ansible/playbooks/install_observability.yml
 
