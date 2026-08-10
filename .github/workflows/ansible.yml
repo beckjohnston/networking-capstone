@@ -3,6 +3,11 @@ name: Ansible
 on:
   workflow_dispatch: 
     branches : [ test ]
+    inputs:
+      playbook:
+        description: "Playbook to run (relative to ansible/playbooks/)"
+        required: true
+        default: "verify_connectivity.yml"
   pull_request:
     branches: [ main ]
     inputs:
@@ -15,8 +20,8 @@ permissions:
   contents: read
 
 env:
-  KEY_PATH: /tmp/capstone-key.pem
-  SSM_KEY_PARAMETER: /capstone/dev/ssh-key
+  KEY_PATH: /tmp/ec2-key.pem
+#  SSM_KEY_PARAMETER: /capstone/dev/ssh-key
 
 jobs:
   run-playbook:
@@ -33,15 +38,22 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Fetch SSH key from SSM Parameter Store
-        run: |
-          aws ssm get-parameter \
-            --name "${{ env.SSM_KEY_PARAMETER }}" \
-            --with-decryption \
-            --query "Parameter.Value" \
-            --output text > ${{ env.KEY_PATH }}
-          chmod 400 ${{ env.KEY_PATH }}
+#      - name: Fetch SSH key from SSM Parameter Store
+#        run: |
+#          aws ssm get-parameter \
+#            --name "${{ env.SSM_KEY_PARAMETER }}" \
+#            --with-decryption \
+#            --query "Parameter.Value" \
+#            --output text > ${{ env.KEY_PATH }}
+#          chmod 400 ${{ env.KEY_PATH }}
 
+      - name: configure ssh key and permissions
+        env: 
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+        run: |
+          printf '%s\n' "${{ secrets.EC2_INSTANCES_PRIVATE_KEY }}" > ${{ env.KEY_PATH }}
+          chmod 400 ${{ env.KEY_PATH }}
+  
       - name: Install Ansible and AWS collection
         run: |
           pip install ansible boto3 botocore
@@ -53,10 +65,11 @@ jobs:
         run : |
             OUTPUT=$(ansible-playbook --check --diff \
               -i ansible/inventory/aws_ec2.yml \
-              -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
+              -e "ansible_ssh_private_key_file=~/.ssh/key.pem" \
               ansible/playbooks/${{ github.event.inputs.playbook }})
       
       - name: Post dry run to PR
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with: 
           script: |
@@ -82,9 +95,9 @@ jobs:
         run: |
           ansible-playbook \
             -i ansible/inventory/aws_ec2.yml \
-            -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
+            -e "ansible_ssh_private_key_file=~/.ssh/key.pem" \
             ansible/playbooks/${{ github.event.inputs.playbook }}
 
       - name: Clean up key
         if: always()
-        run: rm -f ${{ env.KEY_PATH }}
+        run: rm -f ssh-key.pem

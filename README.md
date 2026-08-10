@@ -60,7 +60,7 @@ Create a terraform project
 ```
    ansible-playbook \
       -i ansible/inventory/aws_ec2.yml \
-      -e "ansible_ssh_private_key_file=/tmp/capstone-key.pem" \
+      -e "ansible_ssh_private_key_file={{ EC2_INSTANCES_PRIVATE_KEY }}" \
       -e "grafana_admin_password=<your-password>" \
       ansible/playbooks/install_observability.yml
 ```
@@ -83,7 +83,7 @@ Create a terraform project
 ```
    ansible-playbook \
       -i ansible/inventory/aws_ec2.yml \
-      -e "ansible_ssh_private_key_file=/tmp/capstone-key.pem" \
+      -e "ansible_ssh_private_key_file={{ EC2_INSTANCES_PRIVATE_KEY }}" \
       -e **INSERT VARIABLES HERE** \
       ansible/playbooks/router_config.yml
 ```

@@ -76,12 +76,9 @@ username automate privilege 15 secret 8 $8$g62y2e1pz0O4/n$M8DmVAM/G9yySvjbB1I2tB
 !
 redundancy
 !
-crypto keyring keyring-vpn-0f56b2afc60b1d492-2  
-  local-address GigabitEthernet1
-  pre-shared-key address 52.54.79.47 key lhvPlpTYxUTno.lNTbR25F9743HEguaH
 crypto keyring keyring-vpn-0f56b2afc60b1d492-1  
   local-address GigabitEthernet1
-  pre-shared-key address 52.44.80.94 key Qq4fLolOMf1iW3d7gJhtzF8h8Tu3IlNT
+  pre-shared-key address {{ nat_gateway_public_ip }} key Qq4fLolOMf1iW3d7gJhtzF8h8Tu3IlNT
 !
 crypto isakmp policy 200
  encr aes
@@ -91,15 +88,9 @@ crypto isakmp policy 200
 crypto isakmp keepalive 10 10 periodic
 crypto isakmp profile isakmp-vpn-0f56b2afc60b1d492-1
    keyring keyring-vpn-0f56b2afc60b1d492-1
-   match identity address 52.44.80.94 255.255.255.255 
+   match identity address {{ nat_gateway_public_ip }} 255.255.255.255 
    local-address GigabitEthernet1
    rekey
-crypto isakmp profile isakmp-vpn-0f56b2afc60b1d492-2
-   keyring keyring-vpn-0f56b2afc60b1d492-2
-   match identity address 52.54.79.47 255.255.255.255 
-   local-address GigabitEthernet1
-   rekey
-!
 crypto ipsec security-association replay window-size 1024
 !
 crypto ipsec transform-set ipsec-prop-vpn-aws esp-aes esp-sha-hmac 
@@ -114,22 +105,11 @@ crypto ipsec profile ipsec-vpn-aws
 interface Tunnel1
  description vpn-0f56b2afc60b1d492 from TGW to cgw-00d8fbb76cc59295e
  ip vrf forwarding vpn-0f56b2afc60b1d492
- ip address 169.254.185.70 255.255.255.252
+ ip address {{ nat_gateway_private_ip }} 255.255.255.252
  ip tcp adjust-mss 1387
  tunnel source GigabitEthernet1
  tunnel mode ipsec ipv4
- tunnel destination 52.44.80.94
- tunnel protection ipsec profile ipsec-vpn-aws
- ip virtual-reassembly
-!
-interface Tunnel2
- description vpn-0f56b2afc60b1d492 from TGW to cgw-00d8fbb76cc59295e
- ip vrf forwarding vpn-0f56b2afc60b1d492
- ip address 169.254.232.90 255.255.255.252
- ip tcp adjust-mss 1387
- tunnel source GigabitEthernet1
- tunnel mode ipsec ipv4
- tunnel destination 52.54.79.47
+ tunnel destination {{ nat_gateway_public_ip }
  tunnel protection ipsec profile ipsec-vpn-aws
  ip virtual-reassembly
 !
@@ -158,13 +138,6 @@ router bgp 64525
   neighbor 169.254.185.69 default-originate
   neighbor 169.254.185.69 as-override
   neighbor 169.254.185.69 soft-reconfiguration inbound
-  neighbor 169.254.232.89 remote-as {{ transit_gateway_asn }}
-  neighbor 169.254.232.89 timers 10 30 30
-  neighbor 169.254.232.89 activate
-  neighbor 169.254.232.89 next-hop-self
-  neighbor 169.254.232.89 default-originate
-  neighbor 169.254.232.89 as-override
-  neighbor 169.254.232.89 soft-reconfiguration inbound
  exit-address-family
 !
 iox
@@ -174,8 +147,8 @@ ip tcp window-size 8192
 ip http server
 ip http authentication local
 ip http secure-server
-ip route 0.0.0.0 0.0.0.0 GigabitEthernet1 100.64.127.225
-ip route vrf GS 0.0.0.0 0.0.0.0 GigabitEthernet1 100.64.127.225 global
+ip route 0.0.0.0 0.0.0.0 GigabitEthernet1 {{ router_management_ip }}
+ip route vrf GS 0.0.0.0 0.0.0.0 GigabitEthernet1 {{ router_management_ip }} global
 !
 ip ssh rsa keypair-name ssh-key
 ip ssh version 2
