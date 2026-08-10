@@ -2,22 +2,22 @@ name: Ansible
 
 on:
   workflow_dispatch: 
-    branches : [ test ]
     inputs:
       playbook:
         description: "Playbook to run (relative to ansible/playbooks/)"
         required: true
         default: "verify_connectivity.yml"
+        type: choice
+        options:
+          - verify_connectivity.yml
+          - install_observability.yml
+          - router_config.yml
   pull_request:
     branches: [ main ]
-    inputs:
-      playbook:
-        description: "Playbook to run (relative to ansible/playbooks/)"
-        required: true
-        default: "verify_connectivity.yml"
 
 permissions:
   contents: read
+  pull-requests: write
 
 env:
   KEY_PATH: /tmp/ec2-key.pem
@@ -61,12 +61,19 @@ jobs:
 
       - name: Dry-run diff 
         id : ansible
+        if: github.event.inputs.playbook != 'router_config.yml'
         continue-on-error: true
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_CONFIG: ansible/ansible.cfg
         run : |
             OUTPUT=$(ansible-playbook --check --diff \
               -i ansible/inventory/aws_ec2.yml \
-              -e "ansible_ssh_private_key_file=~/.ssh/key.pem" \
-              ansible/playbooks/${{ github.event.inputs.playbook }})
+              -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
+              ansible/playbooks/${{ github.event.inputs.playbook }}) || true
+              echo "ansible_output<<EOF" >> $GITHUB_OUTPUT
+              echo "$OUTPUT" >> $GITHUB_OUTPUT
+              echo "EOF" >> $GITHUB_OUTPUT
       
       - name: Post dry run to PR
         if: github.event_name == 'pull_request'
@@ -88,16 +95,53 @@ jobs:
                 body: output,
               });
 
-      - name: Run playbook
+      - name: Run verify playbook
+        if: github.event.inputs.playbook  == 'verify_connectivity.yml'
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
           ANSIBLE_CONFIG: ansible/ansible.cfg
         run: |
           ansible-playbook \
             -i ansible/inventory/aws_ec2.yml \
-            -e "ansible_ssh_private_key_file=~/.ssh/key.pem" \
+            -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
             ansible/playbooks/${{ github.event.inputs.playbook }}
 
+      - name: Run install observability playbook
+        if: github.event.inputs.playbook  == 'install_observability.yml'
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_CONFIG: ansible/ansible.cfg
+        run: |
+          ansible-playbook \
+          -i ansible/inventory/aws_ec2.yml \
+          -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
+          -e "grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" \
+          ansible/playbooks/install_observability.yml
+
+      - name: Setup Terraform
+        if: github.event.inputs.playbook == 'router_config.yml'
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform init
+        if: github.event.inputs.playbook == 'router_config.yml'
+        working-directory: ./terraform   # adjust to wherever your .tf files live
+        run: terraform init
+
+      - name: Run router config playbook
+        if: github.event.inputs.playbook == 'router_config.yml'
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_CONFIG: ansible/ansible.cfg
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/ansible/group_vars/all"
+          terraform -chdir=terraform output -json > "$GITHUB_WORKSPACE/ansible/group_vars/all/output.json"
+          echo "---- output.json contents ----"
+          cat "$GITHUB_WORKSPACE/ansible/group_vars/all/output.json"
+          ansible-playbook \
+            -i ansible/inventory/aws_ec2.yml \
+            -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
+            ansible/playbooks/router_config.yml
+        
       - name: Clean up key
         if: always()
         run: rm -f ssh-key.pem

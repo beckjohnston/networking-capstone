@@ -14,3 +14,15 @@ variable "key_name" {
   description = "EC2 key pair name"
   type        = string
 }
+
+variable "project_name" {
+  description = "Project name used for naming resources"
+  type        = string
+  default     = "networking-capstone"
+}
+
+variable "environment" {
+  description = "Deployment environment"
+  type        = string
+  default     = "dev"
+}

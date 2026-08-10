@@ -1,4 +1,4 @@
-hostname router
+hostname {{ router_management_ip }}
 !
 boot-start-marker
 boot-end-marker
@@ -14,7 +14,7 @@ logging persistent size 1000000 filesize 8192 immediate
 !
 no aaa new-model
 !
-ip vrf vpn-0f56b2afc60b1d492
+ip vrf {{ vpn_connection_id }}
  rd 64525:1
  route-target export 64525:0
  route-target import 64525:0
@@ -76,9 +76,9 @@ username automate privilege 15 secret 8 $8$g62y2e1pz0O4/n$M8DmVAM/G9yySvjbB1I2tB
 !
 redundancy
 !
-crypto keyring keyring-vpn-0f56b2afc60b1d492-1  
+crypto keyring keyring-{{ vpn_connection_id }} 
   local-address GigabitEthernet1
-  pre-shared-key address {{ nat_gateway_public_ip }} key Qq4fLolOMf1iW3d7gJhtzF8h8Tu3IlNT
+  pre-shared-key address {{ router_vpn_public_ip }} key {{ vpn_tunnel1_preshared_key }}
 !
 crypto isakmp policy 200
  encr aes
@@ -86,9 +86,9 @@ crypto isakmp policy 200
  group 2
  lifetime 28800
 crypto isakmp keepalive 10 10 periodic
-crypto isakmp profile isakmp-vpn-0f56b2afc60b1d492-1
-   keyring keyring-vpn-0f56b2afc60b1d492-1
-   match identity address {{ nat_gateway_public_ip }} 255.255.255.255 
+crypto isakmp profile isakmp-{{ vpn_connection_id }}
+   keyring keyring-{{ vpn_connection_id }}
+   match identity address {{ router_vpn_public_ip }} 255.255.255.255 
    local-address GigabitEthernet1
    rekey
 crypto ipsec security-association replay window-size 1024
@@ -103,13 +103,13 @@ crypto ipsec profile ipsec-vpn-aws
  set pfs group2
 !
 interface Tunnel1
- description vpn-0f56b2afc60b1d492 from TGW to cgw-00d8fbb76cc59295e
- ip vrf forwarding vpn-0f56b2afc60b1d492
- ip address {{ nat_gateway_private_ip }} 255.255.255.252
+ description {{ vpn_connection_id }} from TGW to {{ customer_gateway_id }}
+ ip vrf forwarding {{ vpn_connection_id }}
+ ip address {{ vpn_tunnel1_router_inside_ip }} 255.255.255.252
  ip tcp adjust-mss 1387
  tunnel source GigabitEthernet1
  tunnel mode ipsec ipv4
- tunnel destination {{ nat_gateway_public_ip }
+ tunnel destination {{ router_vpn_public_ip }}
  tunnel protection ipsec profile ipsec-vpn-aws
  ip virtual-reassembly
 !
@@ -121,7 +121,7 @@ interface VirtualPortGroup0
  no mop sysid
 !
 interface GigabitEthernet1
- ip address 100.64.127.234 255.255.255.240
+ ip address {{ router_management_ip }} 255.255.255.240
  ip nat outside
  negotiation auto
  no mop enabled
@@ -130,14 +130,14 @@ interface GigabitEthernet1
 router bgp 64525
  bgp log-neighbor-changes
  !
- address-family ipv4 vrf vpn-0f56b2afc60b1d492
-  neighbor 169.254.185.69 remote-as {{ transit_gateway_asn }}
-  neighbor 169.254.185.69 timers 10 30 30
-  neighbor 169.254.185.69 activate
-  neighbor 169.254.185.69 next-hop-self
-  neighbor 169.254.185.69 default-originate
-  neighbor 169.254.185.69 as-override
-  neighbor 169.254.185.69 soft-reconfiguration inbound
+ address-family ipv4 vrf {{ vpn_connection_id }}
+  neighbor {{ vpn_tunnel1_aws_inside_ip }} remote-as {{ transit_gateway_asn }}
+  neighbor {{ vpn_tunnel1_aws_inside_ip }} timers 10 30 30
+  neighbor {{ vpn_tunnel1_aws_inside_ip }} activate
+  neighbor {{ vpn_tunnel1_aws_inside_ip }} next-hop-self
+  neighbor {{ vpn_tunnel1_aws_inside_ip }} default-originate
+  neighbor {{ vpn_tunnel1_aws_inside_ip }} as-override
+  neighbor {{ vpn_tunnel1_aws_inside_ip }} soft-reconfiguration inbound
  exit-address-family
 !
 iox
@@ -147,8 +147,8 @@ ip tcp window-size 8192
 ip http server
 ip http authentication local
 ip http secure-server
-ip route 0.0.0.0 0.0.0.0 GigabitEthernet1 {{ router_management_ip }}
-ip route vrf GS 0.0.0.0 0.0.0.0 GigabitEthernet1 {{ router_management_ip }} global
+ip route 0.0.0.0 0.0.0.0 GigabitEthernet1 100.64.127.225
+ip route vrf GS 0.0.0.0 0.0.0.0 GigabitEthernet1 100.64.127.225 global
 !
 ip ssh rsa keypair-name ssh-key
 ip ssh version 2
