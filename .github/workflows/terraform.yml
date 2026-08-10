@@ -14,19 +14,10 @@ on:
           - plan
   pull_request:
     branches: [ main ]
-    inputs:
-      action:
-        description: "plan, apply or destroy"
-        required: true
-        default: "apply"
-        type: choice
-        options:
-          - apply
-          - destroy
-          - plan
 
 permissions:
   contents: read
+  pull-requests: write
 
 env:
   TF_VERSION: "1.10.x"
@@ -65,7 +56,7 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -input=false | tee /tmp/tfplan.txt
+        run: terraform plan -input=false #| tee /tmp/tfplan.txt
         #run: terraform plan -input=false -var="grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" | tee /tmp/tfplan.txt
 
       - name: Post Plan to Summary
@@ -88,7 +79,6 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: commentBody,
             });
             
   
@@ -122,7 +112,7 @@ jobs:
         run: terraform validate
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false | tee /tmp/tfplan.txt
+        run: terraform apply -auto-approve -input=false #| tee /tmp/tfplan.txt
         #run: terraform apply -auto-approve -input=false -var="grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}"
 
   terraform-destroy:
