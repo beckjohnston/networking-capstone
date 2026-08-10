@@ -165,12 +165,14 @@ Terraform also manages the supporting infrastructure required to operatethis env
 ##### router_config
  - Imports and runs the router_config.j2 template onto the Cisco Catalyst 8000V router.
 
+ - **MUST HAVE output.json LOCATED IN THE ansible/group_vars/all FOLDER** 
+      terraform output -json > ./ansible/group_vars/all/output.json
 ```
    ansible-playbook \
       -i ansible/inventory/aws_ec2.yml \
       -e "ansible_ssh_private_key_file=${{ secrets.EC2_INSTANCES_PRIVATE_KEY }}" \
       ansible/playbooks/router_config.yml
-```
+```  
 
  - Requires the following parameters from the terraform outputs to be able to run.
       - router_management_ip:             Private IP of the router
