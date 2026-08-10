@@ -122,7 +122,7 @@ jobs:
         run: terraform validate
 
       - name: Terraform Apply
-        run: terraform apply -input=false | tee /tmp/tfplan.txt
+        run: terraform apply -auto-approve -input=false | tee /tmp/tfplan.txt
         #run: terraform apply -auto-approve -input=false -var="grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}"
 
   terraform-destroy:
