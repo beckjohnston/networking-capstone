@@ -4,7 +4,7 @@ regions:
 
 # Filter to only instances belonging to this project (set by Terraform default_tags)
 filters:
-  tag: Project: capstone
+  tag: 'Project: capstone'
   instance-state-name: running
 
 # Group hosts by their Role tag - playbooks target tag_Role_bastion,
