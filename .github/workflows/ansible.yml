@@ -133,8 +133,8 @@ jobs:
           ANSIBLE_HOST_KEY_CHECKING: "False"
           ANSIBLE_CONFIG: ansible/ansible.cfg
         run: |
-          terraform -chdir=terraform output -json > "./ansible/group_vars/all/output.json"
-          cat "./ansible/group_vars/all/output.json"
+          terraform -chdir=terraform output -json > "/home/runner/work/networking-capstone/networking-capstone/ansible/group_vars/all/output.json"
+          cat "/home/runner/work/networking-capstone/networking-capstone/ansible/group_vars/all/output.json"
           ansible-playbook \
             -i ansible/inventory/aws_ec2.yml \
             -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
