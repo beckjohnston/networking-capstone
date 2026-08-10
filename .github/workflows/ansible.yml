@@ -8,6 +8,11 @@ on:
         description: "Playbook to run (relative to ansible/playbooks/)"
         required: true
         default: "verify_connectivity.yml"
+        type: choice
+        options:
+          - verify_connectivity.yml
+          - install_observability.yml
+          - router_config.yml
   pull_request:
     branches: [ main ]
     inputs:
