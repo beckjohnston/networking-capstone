@@ -133,10 +133,8 @@ jobs:
           ANSIBLE_HOST_KEY_CHECKING: "False"
           ANSIBLE_CONFIG: ansible/ansible.cfg
         run: |
-          mkdir -p "$GITHUB_WORKSPACE/ansible/group_vars/all"
-          terraform -chdir=terraform output -json > "$GITHUB_WORKSPACE/ansible/group_vars/all/output.json"
-          echo "---- output.json contents ----"
-          cat "$GITHUB_WORKSPACE/ansible/group_vars/all/output.json"
+          terraform -chdir=terraform output -json > "./ansible/group_vars/all/output.json"
+          cat "./ansible/group_vars/all/output.json"
           ansible-playbook \
             -i ansible/inventory/aws_ec2.yml \
             -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
