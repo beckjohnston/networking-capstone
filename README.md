@@ -38,504 +38,95 @@ Create a terraform project
  - Create a slide deck for the in-person presentation.
  - Either get the project working on a laptop for use in the presentation or create a video of how the project functions.
    - A video might need to be edited as Terraform can be very slow when being run
+Terraform Infrastructure Architecture
 
+Overview
 
-##Terraform
+The Terraform portion of the Networking Capstone provisions the completeAWS infrastructure used by the project. The environment is separatedinto three VPCs: an Application VPC for the bastion and privateapplication servers, an Observability VPC for Grafana and Prometheus,and a Network VPC for the Cisco Catalyst 8000V router. Terraform alsoprovisions the routing infrastructure connecting these environments,including Internet Gateways, a NAT Gateway, AWS Transit Gateway, TransitGateway attachments, an AWS Customer Gateway, and an AWS Site-to-SiteVPN used for BGP connectivity between AWS and the Cisco router.
 
-#Overview
-
-The Terraform portion of the Networking Capstone provisions the AWSinfrastructure required for the project. The environment is divided intothree VPCs for application workloads, observability infrastructure, andnetwork routing.
-
-Terraform manages:
-
-Three AWS VPCs
-
-Public and private subnets
-
-EC2 instances
-
-Cisco Catalyst 8000V router infrastructure
-
-Internet Gateways
-
-NAT Gateway
-
-Route tables
-
-Security groups
-
-AWS Transit Gateway
-
-Transit Gateway VPC attachments
-
-AWS Customer Gateway
-
-AWS Site-to-Site VPN
-
-BGP tunnel addressing
-
-Elastic IP addresses
-
-SSH key infrastructure
-
-S3 remote state
-
-DynamoDB state locking
-
-AWS IAM and GitHub OIDC infrastructure
+In addition to the network itself, Terraform manages the project'ssecurity groups, EC2 instances, Elastic IP addresses, SSH key resources,remote Terraform state, state locking, and AWS IAM resources used forGitHub OIDC authentication.
 
 Application VPC
 
-The Application VPC uses:
+The Application VPC uses the CIDR range 10.0.0.0/16 and contains onepublic subnet and two private subnets. The public subnet, 10.0.1.0/24,contains the bastion host and NAT Gateway. The private applicationsubnets use 10.0.2.0/24 and 10.0.3.0/24 and each contain an AmazonLinux EC2 application instance.
 
-10.0.0.0/16
+The bastion host is deployed in the public subnet with a public IPaddress and provides an administrative entry point into the applicationenvironment. The two application servers remain in private subnets anddo not require public IP addresses. Terraform assigns the applicationinstances the private_app role tag and places them behind theapplication security group.
 
-It contains three subnets:
-
-Subnet      CIDR            Purpose
-
-Public      10.0.1.0/24   Bastion host and NAT GatewayPrivate 1   10.0.2.0/24   Private application EC2 instancePrivate 2   10.0.3.0/24   Private application EC2 instance
-
-Bastion Instance
-
-Terraform provisions an Amazon Linux EC2 bastion instance in the publicapplication subnet.
-
-The bastion receives a public IP address and uses the bastion securitygroup.
-
-Private Application Instances
-
-Terraform provisions two Amazon Linux EC2 instances:
-
-private-app-1
-
-private-app-2
-
-Each instance is placed in a separate private subnet.
-
-The instances use the private_app role tag and the applicationsecurity group.
-
-NAT Gateway
-
-Terraform provisions an Elastic IP and NAT Gateway in the ApplicationVPC public subnet.
-
-The private application route table sends its default route through theNAT Gateway:
-
-0.0.0.0/0 -> NAT Gateway
-
-Both private application subnets are associated with this route table.
-
-This allows the private EC2 instances to initiate outbound Internetconnections without requiring public IP addresses.
+Terraform also provisions an Elastic IP and NAT Gateway in theApplication VPC public subnet. Both private application subnets use adedicated private route table whose default route points to the NATGateway. This allows the private instances to initiate outbound Internetconnections while remaining inaccessible directly from the publicInternet.
 
 Observability VPC
 
-The Observability VPC uses:
+The Observability VPC uses the CIDR range 10.1.0.0/16. It contains apublic subnet at 10.1.1.0/24 and a private subnet at 10.1.2.0/24.Terraform provisions the Grafana EC2 instance in the public subnet andthe Prometheus EC2 instance in the private subnet.
 
-10.1.0.0/16
+Grafana receives a public IP address and uses a dedicated security groupthat permits access to its web interface on TCP port 3000. Prometheusremains in the private subnet and uses its own security group.Separating these resources allows the user-facing monitoring interfaceand the internal monitoring service to have different network exposure.
 
-It contains:
+Network VPC and Cisco Catalyst 8000V
 
-Subnet    CIDR            Purpose
+The Network VPC uses the CIDR range 10.2.0.0/16, with the routerinfrastructure located in the 10.2.1.0/24 public subnet. Terraformprovisions a Cisco Catalyst 8000V EC2 instance using the CiscoMarketplace AMI ami-0be014c32727a2444 and the c5.large instancetype.
 
-Public    10.1.1.0/24   Grafana EC2 instancePrivate   10.1.2.0/24   Prometheus EC2 instance
+The Catalyst router is tagged with Name = catalyst-router andRole = router. Source/destination checking is disabled on the routerso AWS permits the instance to forward packets rather than treating itonly as a normal EC2 endpoint. Terraform also creates and attaches asecondary network interface at device index 1, with source/destinationchecking disabled on that interface as well.
 
-Grafana Instance
+A dedicated Elastic IP is allocated and associated with the Catalystinstance. This gives the router a stable public endpoint and allows thesame address to be referenced by the AWS Customer Gateway resource usedfor the VPN connection.
 
-Terraform provisions an Amazon Linux EC2 instance for Grafana in thepublic observability subnet.
+Internet and Private Routing
 
-The instance receives a public IP address and uses the Grafana securitygroup.
+Terraform provisions an Internet Gateway for each of the three VPCs. TheApplication, Observability, and Network public route tables each usetheir respective Internet Gateway as the destination for the 0.0.0.0/0default route. This provides Internet connectivity to resources locatedin the public subnets.
 
-Prometheus Instance
-
-Terraform provisions an Amazon Linux EC2 instance for Prometheus in theprivate observability subnet.
-
-The instance uses the Prometheus security group and does not require adirectly assigned public IP address.
-
-Network VPC
-
-The Network VPC uses:
-
-10.2.0.0/16
-
-The network public subnet uses:
-
-10.2.1.0/24
-
-This VPC contains the Cisco routing infrastructure.
-
-Cisco Catalyst 8000V EC2 Instance
-
-Terraform provisions the Cisco Catalyst 8000V as an EC2 instance usingthe Cisco Marketplace AMI:
-
-ami-0be014c32727a2444
-
-The instance type is:
-
-c5.large
-
-The router is tagged:
-
-Name = catalyst-router
-
-Role = router
-
-EC2 source/destination checking is disabled so the instance can forwardnetwork traffic.
-
-Router Network Interfaces
-
-The Catalyst instance has its primary EC2 network interface and anadditional Terraform-managed network interface.
-
-The secondary interface is attached using device index 1.
-
-Source/destination checking is also disabled on the secondary interface.
-
-Router Elastic IP
-
-Terraform provisions an Elastic IP for the Catalyst router.
-
-The Elastic IP provides a stable public address for the router and isassociated with the router EC2 instance.
-
-The same public address is used by the AWS Customer Gateway resource toidentify the Cisco endpoint.
-
-Internet Gateways
-
-Terraform provisions an Internet Gateway for each VPC:
-
-Application Internet Gateway
-
-Observability Internet Gateway
-
-Network Internet Gateway
-
-The public route tables use:
-
-0.0.0.0/0 -> Internet Gateway
-
-This provides Internet connectivity to resources located in the publicsubnets.
-
-Route Tables
-
-Terraform manages separate route tables for the public and privateportions of the environment.
-
-Application Public Route Table
-
-The Application VPC public route table sends Internet-bound trafficthrough the Application Internet Gateway.
-
-Application Private Route Table
-
-The Application VPC private route table sends Internet-bound trafficthrough the NAT Gateway.
-
-Both private application subnets are associated with this route table.
-
-Observability Public Route Table
-
-The Observability VPC public route table sends Internet-bound trafficthrough the Observability Internet Gateway.
-
-Network Public Route Table
-
-The Network VPC public route table sends Internet-bound traffic throughthe Network Internet Gateway.
+The private Application VPC subnets use a separate route table. Insteadof routing 0.0.0.0/0 directly to an Internet Gateway, this route tablepoints to the NAT Gateway in the public subnet. The two privateapplication subnets are associated with this private route table,allowing outbound connectivity while preserving their privateaddressing.
 
 AWS Transit Gateway
 
-Terraform provisions an AWS Transit Gateway as the centralized AWSrouting component.
+Terraform provisions an AWS Transit Gateway to act as the centralizedAWS routing layer for the project. The Transit Gateway uses Amazon-sideASN 64512. Default Transit Gateway route-table association andpropagation are disabled so that the project's associations and routepropagation are explicitly controlled by Terraform.
 
-The Transit Gateway uses:
+A dedicated Transit Gateway route table is created and used for theproject. Terraform creates VPC attachments for the Application,Observability, and Network VPCs. The Application attachment uses bothprivate application subnets, the Observability attachment uses theprivate observability subnet, and the Network attachment uses the subnetcontaining the Catalyst routing infrastructure.
 
-Amazon-side ASN: 64512
+Each VPC attachment is associated with the dedicated Transit Gatewayroute table. Route propagation is also enabled for the three VPCattachments so their networks can be represented in the Transit Gatewayrouting environment.
 
-Default Transit Gateway route-table association and propagation aredisabled so the project explicitly defines these relationships.
+Customer Gateway, Site-to-Site VPN, and BGP Infrastructure
 
-Terraform also creates a dedicated Transit Gateway route table.
+Terraform creates an AWS Customer Gateway representing the CiscoCatalyst 8000V. The Customer Gateway uses the Catalyst router's ElasticIP as its endpoint and uses BGP ASN 64525. The AWS Transit Gatewayuses ASN 64512, creating the two autonomous systems required for theproject's eBGP relationship.
 
-Transit Gateway VPC Attachments
+Terraform then provisions an AWS Site-to-Site VPN between the CiscoCustomer Gateway and the AWS Transit Gateway. The VPN is configured fordynamic routing rather than static routes. Its Transit Gatewayattachment is also configured for route propagation into the project'sTransit Gateway route table.
 
-Terraform attaches all three VPCs to the Transit Gateway.
+Two VPN tunnel networks are defined in Terraform. Tunnel 1 uses169.254.185.68/30, with 169.254.185.69 representing the AWS side and169.254.185.70 representing the Cisco side. Tunnel 2 uses169.254.232.88/30, with 169.254.232.89 representing the AWS side and169.254.232.90 representing the Cisco side. These addresses arepoint-to-point tunnel addresses used for the BGP relationship and areseparate from the three VPC address ranges.
 
-Application Attachment
-
-The Application VPC attachment uses:
-
-10.0.2.0/24
-
-10.0.3.0/24
-
-These are the two private application subnets.
-
-Observability Attachment
-
-The Observability VPC attachment uses:
-
-10.1.2.0/24
-
-Network Attachment
-
-The Network VPC attachment uses:
-
-10.2.1.0/24
-
-Terraform associates each attachment with the dedicated Transit Gatewayroute table.
-
-Terraform also enables route propagation for the Application,Observability, and Network attachments.
-
-AWS Customer Gateway
-
-Terraform creates an AWS Customer Gateway representing the CiscoCatalyst router.
-
-The Customer Gateway uses:
-
-Cisco BGP ASN: 64525
-
-Its IP address is the Elastic IP assigned to the Catalyst router.
-
-The Customer Gateway acts as the AWS-side representation of the externalCisco endpoint used by the Site-to-Site VPN.
-
-AWS Site-to-Site VPN
-
-Terraform provisions an AWS Site-to-Site VPN connection between:
-
-The Cisco Customer Gateway
-
-The AWS Transit Gateway
-
-The VPN uses dynamic routing rather than static routes.
-
-The VPN attachment is also configured for propagation into theTerraform-managed Transit Gateway route table.
-
-BGP Tunnel Infrastructure
-
-Terraform defines the inside CIDR ranges for both Site-to-Site VPNtunnels.
-
-Tunnel 1
-
-Tunnel CIDR:
-
-169.254.185.68/30
-
-Addresses derived from the Terraform VPN resource are:
-
-AWS side: 169.254.185.69
-
-Cisco side: 169.254.185.70
-
-Tunnel 2
-
-Tunnel CIDR:
-
-169.254.232.88/30
-
-Addresses derived from the Terraform VPN resource are:
-
-AWS side: 169.254.232.89
-
-Cisco side: 169.254.232.90
-
-The Terraform infrastructure therefore provides the AWS networkingresources and addressing required for the BGP relationship between theCatalyst router and Transit Gateway.
-
-The autonomous system numbers are:
-
-Cisco Catalyst: 64525
-
-AWS Transit Gateway: 64512
+This infrastructure gives the project a Terraform-managed path from theCisco Catalyst router through the Site-to-Site VPN to AWS TransitGateway, while also connecting all three project VPCs to the TransitGateway.
 
 Security Groups
 
-Terraform creates separate security groups for each major infrastructurerole.
+Terraform creates separate security groups for the major infrastructureroles. The bastion security group permits SSH access and outboundconnectivity. The application security group allows SSH access from thebastion and permits TCP port 9100 traffic used by the application'smonitoring architecture. Grafana has a dedicated security group thatpermits TCP port 3000, while Prometheus has its own rules formonitoring-related traffic.
 
-Bastion Security Group
-
-Provides SSH access to the bastion host and allows outbound traffic.
-
-Application Security Group
-
-Provides SSH access from the bastion and permits TCP port 9100 trafficrequired by the application monitoring architecture.
-
-Grafana Security Group
-
-Provides TCP port 3000 access for the Grafana interface and controlledSSH access.
-
-Prometheus Security Group
-
-Provides the network permissions required for Prometheus and monitoringtraffic.
-
-Router Security Group
-
-Provides:
-
-TCP 22 for SSH
-
-TCP 179 for BGP
-
-Outbound traffic is permitted from the router.
+The Cisco router uses a dedicated router security group. It permits SSHon TCP port 22 and BGP on TCP port 179, with outbound trafficpermitted. Together with disabled EC2 source/destination checking, theserules allow the Catalyst instance to function as routing infrastructurerather than as a standard application host.
 
 SSH Key Infrastructure
 
-Terraform defines a 4096-bit RSA private key using the TLS provider.
+Terraform defines a 4096-bit RSA private key using the TLS provider. Thepublic portion of the generated key is registered with AWS as an EC2 keypair, while the private portion is stored in AWS Systems ManagerParameter Store as an encrypted SecureString.
 
-The generated public key is registered as an AWS EC2 key pair.
-
-The generated private key is stored in AWS Systems Manager ParameterStore as a SecureString.
-
-The parameter naming convention is:
-
-/networking-capstone/dev/ssh-key
-
-This keeps the Terraform-managed private key in AWS rather than storingit directly in the repository.
+The intended parameter path is /networking-capstone/dev/ssh-key. Thisdesign keeps the generated private key in AWS rather than storing itdirectly in the Git repository while allowing the EC2 infrastructure touse the corresponding public key.
 
 Terraform Remote State
 
-Terraform uses an S3 backend.
+Terraform uses an S3 backend for shared remote state. The state bucketis beck-networking-capstone-tfstate-2026, and the state object isstored at networking-capstone/terraform.tfstate. The S3 stateinfrastructure uses versioning, public-access blocking, server-sideencryption, and deletion protection.
 
-The state bucket is:
-
-beck-networking-capstone-tfstate-2026
-
-The Terraform state object is:
-
-networking-capstone/terraform.tfstate
-
-The S3 state infrastructure includes:
-
-Versioning
-
-Public-access blocking
-
-Server-side encryption
-
-Deletion protection
-
-Terraform State Locking
-
-Terraform uses the DynamoDB table:
-
-networking-capstone-tf-locks
-
-The table uses LockID as its partition key and provides state lockingfor the shared Terraform backend.
-
-The S3 bucket and DynamoDB table are backend infrastructure and aremaintained separately from the disposable project resources.
+Terraform also uses the DynamoDB table networking-capstone-tf-locksfor state locking. The table uses LockID as its partition key.Together, S3 and DynamoDB provide centralized state storage andprotection against simultaneous Terraform operations modifying the samestate.
 
 AWS IAM and GitHub OIDC
 
-Terraform provisions an AWS IAM OpenID Connect provider for GitHub.
+Terraform provisions an AWS IAM OpenID Connect provider for GitHub usingtoken.actions.githubusercontent.com. It also creates the IAM rolegha-networking-capstone-deploy, whose trust policy is restrictedaccording to the configured GitHub repository.
 
-The OIDC provider trusts:
-
-token.actions.githubusercontent.com
-
-Terraform also provisions the IAM role:
-
-gha-networking-capstone-deploy
-
-The role trust policy restricts access according to the configuredGitHub repository.
-
-The role has AWS PowerUserAccess attached.
+The role has AWS PowerUserAccess attached. This infrastructureprovides the AWS identity and permissions used by the project'sTerraform pipeline without requiring permanent AWS access keys to beembedded directly in the repository configuration.
 
 Terraform Outputs
 
-Terraform exposes infrastructure information needed by other parts ofthe project, including:
+Terraform exposes the identifiers and addresses needed to reference thedeployed infrastructure. These outputs include the three VPC IDs, subnetIDs, security group IDs, public and private EC2 addresses, NAT Gatewayinformation, router management and inside-interface addresses, therouter VPN Elastic IP, Transit Gateway ID and ASN, Customer Gateway ID,VPN connection ID, and the AWS-side and Cisco-side addresses for bothVPN tunnels.
 
-VPC IDs
+The BGP-related outputs are particularly important because they exposethe values generated or managed by the AWS infrastructure. The TransitGateway ASN identifies the AWS autonomous system, while the VPN tunneloutputs identify the AWS and Cisco BGP peer addresses for each tunnel.This allows the Terraform-managed AWS infrastructure to provide thenetwork values required for configuration of the Cisco side withouthard-coding deployed AWS resource identifiers elsewhere.
 
-Subnet IDs
+Infrastructure Summary
 
-Security group IDs
+Overall, the Terraform configuration creates the AWS foundation for thecapstone as a three-VPC environment connected through centralizedTransit Gateway routing. The Application VPC contains the bastion,private application instances, and NAT infrastructure; the ObservabilityVPC contains Grafana and Prometheus; and the Network VPC contains theCisco Catalyst 8000V. The Catalyst router is represented to AWS througha Customer Gateway and connects to the Transit Gateway through adynamically routed Site-to-Site VPN with two BGP-capable tunnels.
 
-Bastion public IP
-
-Application private IPs
-
-Grafana public IP
-
-Prometheus private IP
-
-Router public IP
-
-Router management IP
-
-Router inside-interface IP
-
-Router VPN Elastic IP
-
-NAT Gateway public IP
-
-NAT Gateway private IP
-
-NAT Gateway ID
-
-Private route table ID
-
-Transit Gateway ID
-
-Transit Gateway ASN
-
-Customer Gateway ID
-
-VPN connection ID
-
-Tunnel 1 AWS-side IP
-
-Tunnel 1 Cisco-side IP
-
-Tunnel 2 AWS-side IP
-
-Tunnel 2 Cisco-side IP
-
-Terraform Infrastructure Summary
-
-Terraform-Managed Component         Purpose
-
-Application VPC                     Hosts application infrastructure
-
-Application public subnet           Hosts bastion and NAT Gateway
-
-Application private subnets         Host private application EC2instances
-
-Bastion EC2                         Public administrative entry point
-
-Application EC2 instances           Private application workloads
-
-NAT Gateway                         Outbound Internet connectivity forprivate application subnets
-
-Observability VPC                   Hosts monitoring infrastructure
-
-Grafana EC2                         Public observability instance
-
-Prometheus EC2                      Private observability instance
-
-Network VPC                         Hosts routing infrastructure
-
-Catalyst 8000V EC2                  Cisco software router
-
-Router secondary ENI                Additional router network interface
-
-Router Elastic IP                   Stable public router/VPN endpoint
-
-Internet Gateways                   Public Internet connectivity
-
-Route tables                        Control subnet traffic paths
-
-Transit Gateway                     Central AWS routing component
-
-TGW VPC attachments                 Attach all three VPCs to theTransit Gateway
-
-TGW route table                     Controls Transit Gateway routing
-
-Customer Gateway                    Represents the Cisco router to AWS
-
-Site-to-Site VPN                    Connects the Cisco router to theTransit Gateway
-
-VPN tunnel CIDRs                    Provide point-to-point BGPaddressing
-
-Security groups                     Control EC2 network access
-
-EC2 key pair                        Provides SSH public-keyauthentication
-
-SSM SecureString                    Stores the Terraform-generatedprivate key
-
-S3 bucket                           Stores remote Terraform state
-
-DynamoDB table                      Provides Terraform state locking
-
-IAM OIDC provider                   Establishes GitHub identityfederation with AWS
-
+Terraform also manages the supporting infrastructure required to operatethis environment, including Internet connectivity, route tables,security groups, Elastic IPs, SSH key resources, remote state, statelocking, and AWS IAM/OIDC resources. The result is an AWS networkingenvironment whose cloud infrastructure and routing components aredefined and maintained through Terraform.
 ### Ansible
 
 #### Inventory
