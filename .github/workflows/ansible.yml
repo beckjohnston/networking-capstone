@@ -61,6 +61,7 @@ jobs:
 
       - name: Dry-run diff 
         id : ansible
+        if: github.event.inputs.playbook != 'router_config.yml'
         continue-on-error: true
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
