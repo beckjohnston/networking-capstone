@@ -110,7 +110,7 @@ jobs:
             ansible/playbooks/${{ github.event.inputs.playbook }}
 
       - name: Run install observability
-        if: github.event.inputs.playbook  == 'verify_connectivity.yml'
+        if: github.event.inputs.playbook  == 'install_observability.yml'
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
           ANSIBLE_CONFIG: ansible/ansible.cfg
