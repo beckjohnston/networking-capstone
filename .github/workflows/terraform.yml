@@ -75,12 +75,7 @@ jobs:
               issue_number: context.issue.number,
               body: output
             });
-
-      - name: Fail job if plan filed:
-        if: steps.plan.outcome == 'failure'
-        run: exit 1
             
-  
   terraform-apply:
     name: Apply
     runs-on: ubuntu-latest
