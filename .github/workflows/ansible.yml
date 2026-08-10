@@ -117,19 +117,29 @@ jobs:
           -e "grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" \
           ansible/playbooks/install_observability.yml
 
+      - name: Setup Terraform
+        if: github.event.inputs.playbook == 'router_config.yml'
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform init
+        if: github.event.inputs.playbook == 'router_config.yml'
+        working-directory: ./terraform   # adjust to wherever your .tf files live
+        run: terraform init
+
       - name: Run router config playbook
-        if: github.event.inputs.playbook  == 'router_config.yml'
+        if: github.event.inputs.playbook == 'router_config.yml'
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
           ANSIBLE_CONFIG: ansible/ansible.cfg
+        working-directory: ./terraform   # adjust to wherever your .tf files live
         run: |
-          mkdir ./ansible/group_vars/all
-          touch ./ansible/group_vars/all/output.json
-          terraform output -json > ./ansible/group_vars/all/output.json
+          mkdir -p ../ansible/group_vars/all
+          terraform output -json > ../ansible/group_vars/all/output.json
+          cd ..
           ansible-playbook \
-          -i ansible/inventory/aws_ec2.yml \
-          -e "ansible_ssh_private_key_file=${{ secrets.EC2_INSTANCES_PRIVATE_KEY }}" \
-          ansible/playbooks/router_config.yml
+            -i ansible/inventory/aws_ec2.yml \
+            -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
+            ansible/playbooks/router_config.yml
         
       - name: Clean up key
         if: always()
