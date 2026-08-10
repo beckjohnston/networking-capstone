@@ -78,7 +78,7 @@ redundancy
 !
 crypto keyring keyring-{{ vpn_connection_id }} 
   local-address GigabitEthernet1
-  pre-shared-key address {{ router_vpn_public_ip }} key Qq4fLolOMf1iW3d7gJhtzF8h8Tu3IlNT
+  pre-shared-key address {{ router_vpn_public_ip }} key {{ vpn_tunnel1_preshared_key }}
 !
 crypto isakmp policy 200
  encr aes
