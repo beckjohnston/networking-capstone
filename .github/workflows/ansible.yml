@@ -123,6 +123,7 @@ jobs:
           ANSIBLE_HOST_KEY_CHECKING: "False"
           ANSIBLE_CONFIG: ansible/ansible.cfg
         run: |
+          mkdir ./ansible/group_vars/all
           touch ./ansible/group_vars/all/output.json
           terraform output -json > ./ansible/group_vars/all/output.json
           ansible-playbook \
