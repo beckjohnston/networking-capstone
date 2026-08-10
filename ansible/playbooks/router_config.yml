@@ -14,13 +14,12 @@
 - name: Render and deploy per-router configuration
   hosts: tag_Role_router
   gather_facts: false
-  working-directory: $GITHUB_WORkSPACE/ansible
 
   tasks:
 
     - name: Render base config from template
       ansible.builtin.template:
-        src: templates/router_config.j2
+        src: $GITHUB_WORKSPACE/ansible/templates/router_config.j2
         dest: "/tmp/router_config.cfg"
       delegate_to: localhost
 
