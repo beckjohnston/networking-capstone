@@ -19,7 +19,7 @@
 
     - name: Render base config from template
       ansible.builtin.template:
-        src: ${{ github.workspace }}/ansible/templates/router_config.j2
+        src: "{{playbook_dir }}/templates/router_config.j2"
         dest: "/tmp/router_config.cfg"
       delegate_to: localhost
 
