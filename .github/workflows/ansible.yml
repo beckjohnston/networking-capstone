@@ -15,6 +15,11 @@ on:
         description: "Playbook to run (relative to ansible/playbooks/)"
         required: true
         default: "verify_connectivity.yml"
+        type: choice
+        options:
+          - verify_connectivity.yml
+          - install_observability.yml
+          - router_config.yml
 
 permissions:
   contents: read
@@ -88,7 +93,8 @@ jobs:
                 body: output,
               });
 
-      - name: Run playbook
+      - name: Run verify
+        if: github.event.inputs.playbook  == 'verify_connectivity.yml'
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
           ANSIBLE_CONFIG: ansible/ansible.cfg
@@ -97,6 +103,18 @@ jobs:
             -i ansible/inventory/aws_ec2.yml \
             -e "ansible_ssh_private_key_file=~/.ssh/key.pem" \
             ansible/playbooks/${{ github.event.inputs.playbook }}
+
+      - name: Run install observability
+        if: github.event.inputs.playbook  == 'verify_connectivity.yml'
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_CONFIG: ansible/ansible.cfg
+        run: |
+          ansible-playbook \
+          -i ansible/inventory/aws_ec2.yml \
+          -e "ansible_ssh_private_key_file={{ EC2_INSTANCES_PRIVATE_KEY }}" \
+          -e "grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" \
+          ansible/playbooks/install_observability.yml
 
       - name: Clean up key
         if: always()
