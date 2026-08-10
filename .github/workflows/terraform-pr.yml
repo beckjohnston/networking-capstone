@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   plan:
-    uses: ./.github/workflows/_reusable-terraform.yml
+    uses: ./.github/workflows/reusable-terraform.yml
     with:
       command: plan
       working-directory: terraform

@@ -1,0 +1,46 @@
+---
+# Installs the full observability stack across all three roles.
+# Run order matters: node_exporter first (so Prometheus has targets to scrape),
+# then Prometheus, then Grafana (which needs the Prometheus IP to configure the datasource).
+#
+# How to run:
+#   ansible-playbook \
+#     -i ansible/inventory/aws_ec2.yml \
+#     -e "ansible_ssh_private_key_file={{ EC2_INSTANCES_PRIVATE_KEY }}" \
+#     -e "grafana_admin_password=<your-password>" \
+#     ansible/playbooks/install_observability.yml
+
+- name: Install node_exporter on app instances
+  hosts: tag_Role_bastion:tag_Role_private_app
+  gather_facts: true
+  become: true
+  roles:
+    - bastion
+
+- name: Install Prometheus
+  hosts: tag_Role_prometheus
+  gather_facts: true
+  become: true
+  roles:
+    - prometheus
+
+- name: Install Grafana
+  hosts: tag_Role_grafana
+  gather_facts: true
+  become: true
+  vars:
+    prometheus_ip: "{{ hostvars[groups['tag_Role_prometheus'][0]]['private_ip_address'] }}"
+  roles:
+    - grafana
+
+- name: Stack endpoints
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Print access URLs
+      ansible.builtin.debug:
+        msg:
+          - "Grafana:    http://{{ groups['tag_Role_grafana'][0] }}:3000"
+          - "Prometheus: http://{{ groups['tag_Role_prometheus'][0] }}:9090"
+          - "Credentials: admin / {{ grafana_admin_password | default('changeme') }}"

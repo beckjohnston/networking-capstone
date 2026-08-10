@@ -1,0 +1,39 @@
+---
+# Sends and runs the router_config.j2 configuration to the Cisco Catalyst 8000V router located in VPC3
+# Host is tagged in terraform with Role = router
+#
+# How to run:
+#   ansible-playbook \
+#     -i ansible/inventory/aws_ec2.yml \
+#     -e "ansible_ssh_private_key_file={{ EC2_INSTANCES_PRIVATE_KEY }}" \
+#     ansible/playbooks/router_config.yml
+#
+# **MUST HAVE output.json LOCATED IN THE ansible/group_vars/all FOLDER** 
+# - see README for how and where to store the output.json from Terraform
+
+- name: Render and deploy per-router configuration
+  hosts: tag_Role_router
+  gather_facts: false
+
+  tasks:
+
+    - name: Check if JSON file exists
+      stat:
+        path: "./ansible/group_vars/all/output.json"
+      register: json_file_status
+      delegate_to: localhost
+
+    - name: Fail if JSON file is missing
+      fail:
+        msg: "output.json not found in ./ansible/group_vars/all"
+      when: not json_file_status.stat.exists
+
+    - name: Render base config from template
+      ansible.builtin.template:
+        src: templates/router_config.j2
+        dest: "/tmp/{{ inventory_hostname }}.cfg"
+      delegate_to: localhost
+
+    - name: Push rendered config to the device
+      cisco.ios.ios_config:
+        src: "/tmp/{{ inventory_hostname }}.cfg"

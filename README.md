@@ -1,4 +1,8 @@
 # networking-capstone
+## Network Infrastructure
+<img width="1042" height="725" alt="Screenshot 2026-08-07 143217" src="https://github.com/user-attachments/assets/23d8c65a-3e75-40ec-810b-17548736b21a" />
+
+
 
 ## To Do
 
@@ -6,33 +10,34 @@
  - Ansible files
  - GitHub Actions/CI CD
  - Presentation work
+ - Create a diagram for the README/presentation
 
 ### Terraform Project
 Create a terraform project
 
 ### Ansible Project
  - Create and connect various nodes.
-   - Detail where the inventory file can be changed incase the node's ip changes
-   - Make it possible for the inventory file to be created using the output of the Terraform using GitHub Actions
+   - Detail where the inventory file can be changed in case the node's IP changes
+   - Make it possible to create the inventory file using the Terraform output via GitHub Actions
  - Create scripts for verifying and connecting to the created instances
-    - Try to make example scripts for httpd, differnt software downloads, etc.
-    - Make the program work regardless of the OS that the nodes have been created with. Start with Amazon Linux.
+    - Try to make example scripts for httpd, different software downloads, etc.
+    - Make the program OS agnostic. Start with compatibility with Amazon Linux.
  - Try to make the project as easy to modify as possible. Variable files, etc.
-    - Host names for nodes should be easily marked and detailed instructions for modification should be available in the README.md
+    - Host names for nodes should be easily marked and detailed instructions for modification should be available in the README.md.
  - Attach monitoring software such as Grafana or Prometheus.
-    - Find a way to install the sofware using Docker onto the nodes.
-    - Note the exact url necessary for accessing the sofware in the README.md file
+    - Find a way to install the software onto the nodes using Docker.
+    - Note the exact URL necessary for accessing the software in the README.md file.
 
 ### GitHub Action - CI/CD
- - Configure the workflow to be triggered by a pull request
- - Perform a dry run in terraform and ansible before applying changes
+ - Configure the workflow to be triggered by a pull request.
+ - Perform a dry run in Terraform and Ansible prior to applying changes.
 
 ### Presentation Work
  - Finalize the README.md file with detailed descriptions for the use of all features.
    - Highlight how to modify the Terraform and Ansible files based on varying needs or changes
  - Create a slide deck for the in-person presentation.
  - Either get the project working on a laptop for use in the presentation or create a video of how the project functions.
-   - A video might need to be editted as Terraform can be very slow when being run
+   - A video might need to be edited as Terraform can be very slow when being run
 
 
 ## Documentation
@@ -41,13 +46,67 @@ Create a terraform project
 
 ### Ansible
 
-#### Grafana
+#### Inventory
+
+ - The inventory file automatically changes based on the instances configured in the targeted AWS account
+ - Need to query AWS for the targeted hosts based off of the tags provided at initialization of the instances.
+ - Also possible to query through GitHub Action, however that has limited use.
+
+#### Playbooks
+
+##### install_observability
+
+ - Installs various packages on the targeted nodes. Bastion, Prometheus, Grafana in that order
+```
+   ansible-playbook \
+      -i ansible/inventory/aws_ec2.yml \
+      -e "ansible_ssh_private_key_file={{ EC2_INSTANCES_PRIVATE_KEY }}" \
+      -e "grafana_admin_password=<your-password>" \
+      ansible/playbooks/install_observability.yml
+```
+
+ - Command should be using the inventory file that queries the AWS account. 
+ - The ssh private key will need to be retrieved from the output of the terraform file
+ - The grafana password will need to be retrieved from the GitHub Secrets in order to be secure
+
+##### verify_connectivity
+
+ - Tests the connectivity between the public Bastion instance and the private application instances.
+ ```
+   ansible-playbook -i ansible/inventory/aws_ec2.yml ansible/playbooks/verify_connectivity.yml
+```
+ - Runs based on the inventory file that queries the AWS account associated with terraform
+
+##### router_config
+ - Imports and runs the router_config.j2 template onto the Cisco Catalyst 8000V router.
+
+```
+   ansible-playbook \
+      -i ansible/inventory/aws_ec2.yml \
+      -e "ansible_ssh_private_key_file={{ EC2_INSTANCES_PRIVATE_KEY }}" \
+      -e **INSERT VARIABLES HERE** \
+      ansible/playbooks/router_config.yml
+```
+
+ - Requires the following parameters in order to properly set up the BGP tunnel 
+ **INSERT PARAMETERS FROM BGP DOCUMENTATION**
+
+ - See **LINK TO BGP DOCUMENTATION** for details on the implementation of router_config.j2
+
+#### Roles
+
+##### Grafana
 
  - Creates an instance of Grafana on the targeted node. Must be utilized with Prometheus.
  - Grafana password must be stored in GitHub secrets and called manually from GitHub Actions.
       ansible-playbook -i inventory_file playbook.yml -e "grafana_admin_password=password"
 
-#### Bastion
+##### Prometheus
+
+ - Creates an instance of Prometheus on the targeted node. 
+ - Must be configured with Bastion to be able to scrape from VPC 1
+
+##### Bastion
 
  - Creates a link between a preapproved node and the targeted node regardless of whether they are on the same VPC.
  - Needs configuration for keys generated by Terraform, session recording is an option if needed, but needs configured
@@ -55,11 +114,25 @@ Create a terraform project
 
 ### GitHub Actions
 
+#### ansible.yml
+ - Triggered by a pull request on the main branch for automated deployment.
+ - Manually triggered on the test branch for debugging.
+ - Performs a dry run and posts output as a comment in the pull request.
+ - Runs the ansible playbooks.
+
+#### terraform.yml
+- Triggered by a pull request on the main branch for automated deployment.
+- Manually triggered on the test branch for debugging.
+- Takes input of plan, apply, or destroy to determine which terraform command to run.
+- Posts terraform plan output as a comment in the pull request before applying changes.
+- Runs terraform init and validate before planning or applying.
+- Allows for a terraform destroy option for the clean deletion of resources.
 
 
 
-
-
+Transit ASN: 64512
 
   
  pptx link : https://onedrive.live.com/:p:/g/personal/2dc866dcd3e1fe1d/IQCzgyaUMomDQZJtofj93lLDATa5H89nk-nIbJanmtNGYMY?rtime=_v-9K4Dt3kg&redeem=aHR0cHM6Ly8xZHJ2Lm1zL3AvYy8yZGM4NjZkY2QzZTFmZTFkL0lRQ3pneWFVTW9tRFFaSnRvZmo5M2xMREFUYTVIODluay1uSWJKYW5tdE5HWU1ZP2U9Q1ZyZFcz
+
+diagram link: https://lucid.app/lucidspark/e76ce0b0-7f29-45a7-ae42-e110fac401b8/edit?viewport_loc=-923%2C-602%2C1380%2C1313%2C0_0&invitationId=inv_f5e39814-dfb6-4755-9647-ad31873c111e
