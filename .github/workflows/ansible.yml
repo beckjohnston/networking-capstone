@@ -94,7 +94,7 @@ jobs:
                 body: output,
               });
 
-      - name: Run verify
+      - name: Run verify playbook
         if: github.event.inputs.playbook  == 'verify_connectivity.yml'
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
@@ -105,7 +105,7 @@ jobs:
             -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
             ansible/playbooks/${{ github.event.inputs.playbook }}
 
-      - name: Run install observability
+      - name: Run install observability playbook
         if: github.event.inputs.playbook  == 'install_observability.yml'
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
@@ -117,6 +117,17 @@ jobs:
           -e "grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" \
           ansible/playbooks/install_observability.yml
 
+      - name: Run router config playbook
+        if: github.event.inputs.playbook  == 'router_config.yml'
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_CONFIG: ansible/ansible.cfg
+        run: |
+          ansible-playbook \
+          -i ansible/inventory/aws_ec2.yml \
+          -e "ansible_ssh_private_key_file=${{ secrets.EC2_INSTANCES_PRIVATE_KEY }}" \
+          ansible/playbooks/router_config.yml
+        
       - name: Clean up key
         if: always()
         run: rm -f ssh-key.pem
