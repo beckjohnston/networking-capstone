@@ -117,7 +117,7 @@ jobs:
         run: |
           ansible-playbook \
           -i ansible/inventory/aws_ec2.yml \
-          -e "ansible_ssh_private_key_file={{ EC2_INSTANCES_PRIVATE_KEY }}" \
+          -e "ansible_ssh_private_key_file=~/.ssh/key.pem" \
           -e "grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" \
           ansible/playbooks/install_observability.yml
 
