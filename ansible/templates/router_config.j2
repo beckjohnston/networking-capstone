@@ -104,7 +104,7 @@ crypto ipsec profile ipsec-vpn-aws
 !
 interface Tunnel1
  description {{ vpn_connection_id }} from TGW to {{ customer_gateway_id }}
- ip vrf forwarding vpn-0f56b2afc60b1d492
+ ip vrf forwarding {{ vpn_connection_id }}
  ip address {{ vpn_tunnel1_router_inside_ip }} 255.255.255.252
  ip tcp adjust-mss 1387
  tunnel source GigabitEthernet1

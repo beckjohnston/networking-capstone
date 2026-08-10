@@ -88,7 +88,12 @@ Create a terraform project
 ```
 
  - Requires the following parameters from the terraform outputs to be able to run.
-      - 
+      - router_management_ip:             Private IP of the router
+      - vpn_connection_id:                AWS id number for the VPN that was created
+      - customer_gateway_id:              AWS id number assigned to the Customer Gateway that was created
+      - router_vpn_public_ip:             Public IP that is used for the CGW and the end-point for the tunnel
+      - vpn_tunnel1_router_inside_ip:     The Ip for the router side of the BGP tunnel
+      - vpn_tunnel1_aws_inside_ip:        The IP for the AWS side of the BGP tunnel
 
  - See **LINK TO BGP DOCUMENTATION** for details on the implementation of router_config.j2
 
