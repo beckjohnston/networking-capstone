@@ -62,9 +62,10 @@ jobs:
 
       - name: Dry-run diff 
         id : ansible
-        env:
-          ANSIBLE_CONFIG: ansible/ansible.cfg
         continue-on-error: true
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_CONFIG: ansible/ansible.cfg
         run : |
             OUTPUT=$(ansible-playbook --check --diff \
               -i ansible/inventory/aws_ec2.yml \
