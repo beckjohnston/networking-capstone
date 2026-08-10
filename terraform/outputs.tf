@@ -191,3 +191,5 @@ output "vpn_tunnel2_router_inside_ip" {
   value       = cidrhost(aws_vpn_connection.router.tunnel2_inside_cidr, 2)
 }
 
+
+
