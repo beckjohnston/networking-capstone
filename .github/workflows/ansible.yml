@@ -62,6 +62,8 @@ jobs:
 
       - name: Dry-run diff 
         id : ansible
+        env:
+          ANSIBLE_CONFIG: ansible/ansible.cfg
         continue-on-error: true
         run : |
             OUTPUT=$(ansible-playbook --check --diff \
