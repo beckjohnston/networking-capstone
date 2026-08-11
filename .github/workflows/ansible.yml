@@ -133,6 +133,7 @@ jobs:
           ANSIBLE_HOST_KEY_CHECKING: "False"
           ANSIBLE_CONFIG: ansible/ansible.cfg
         run: |
+          ansible-galaxy collection install cisco.ios
           mkdir "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all"
           terraform -chdir=terraform output -json > "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all/output.json"
           ansible-playbook \
