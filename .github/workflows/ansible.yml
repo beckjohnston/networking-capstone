@@ -59,6 +59,7 @@ jobs:
         run: |
           pip install ansible boto3 botocore
           pip install ansible-pylibssh --user
+          pip install paramiko
           ansible-galaxy collection install amazon.aws community.docker
 
       - name: Dry-run diff 
