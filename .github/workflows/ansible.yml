@@ -71,7 +71,7 @@ jobs:
             OUTPUT=$(ansible-playbook --check --diff \
               -i ansible/inventory/aws_ec2.yml \
               -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
-              env.PLAYBOOK 2>&1) || true
+              ${{ env.PLAYBOOK }} 2>&1) || true
               echo "ansible_output<<EOF" >> $GITHUB_OUTPUT
               echo "$OUTPUT" >> $GITHUB_OUTPUT
               echo "EOF" >> $GITHUB_OUTPUT
