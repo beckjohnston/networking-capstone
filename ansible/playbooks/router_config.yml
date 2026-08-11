@@ -12,8 +12,7 @@
 # - see README for how and where to store the output.json from Terraform
 
 - name: Render and deploy per-router configuration
-#  hosts: tag_Role_router
-  hosts: routers
+  hosts: tag_Role_router
   gather_facts: false
 
   tasks:
