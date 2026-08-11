@@ -21,7 +21,7 @@ permissions:
 
 env:
   KEY_PATH: /tmp/ec2-key.pem
-  PLAYBOOK: ${{ github.event.inputs.playbook || 'verify_connectivity.yml' }}
+  PLAYBOOK: ${{ github.event.inputs.playbook || './verify_connectivity.yml' }}
 #  SSM_KEY_PARAMETER: /capstone/dev/ssh-key
 
 jobs:
