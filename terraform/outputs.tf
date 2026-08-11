@@ -193,13 +193,10 @@ output "vpn_tunnel2_router_inside_ip" {
 
 # IPsec pre-shared key for VPN tunnel 1
 output "vpn_tunnel1_preshared_key" {
-  value     = aws_vpn_connection.router.tunnel1_preshared_key
-  sensitive = true
+  value = nonsensitive(aws_vpn_connection.router.tunnel1_preshared_key)
 }
 
 # IPsec pre-shared key for VPN tunnel 2
 output "vpn_tunnel2_preshared_key" {
-  value     = aws_vpn_connection.router.tunnel2_preshared_key
-  sensitive = true
+  value = nonsensitive(aws_vpn_connection.router.tunnel2_preshared_key)
 }
-

@@ -61,6 +61,7 @@ resource "aws_security_group" "app" {
 
 
 # Grafana
+
 resource "aws_security_group" "grafana" {
   name        = "capstone-grafana-sg"
   description = "Grafana web access"
@@ -79,7 +80,7 @@ resource "aws_security_group" "grafana" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -121,6 +122,15 @@ resource "aws_security_group" "prometheus" {
     ]
   }
 
+
+  ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -156,6 +166,34 @@ resource "aws_security_group" "router" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  tags = {
+    Name = "router-sg"
+  }
+
+  ingress {
+    description = "NETCONF from lab network"
+    from_port   = 830
+    to_port     = 830
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.1.0/24"]
+  }
+
+  ingress {
+    description = "RESTCONF from lab network"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.1.0/24"]
+  }
+
+  ingress {
+    description = "ICMP from lab network"
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = ["10.0.1.0/24"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -163,7 +201,4 @@ resource "aws_security_group" "router" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "router-sg"
-  }
 }

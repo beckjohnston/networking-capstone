@@ -17,9 +17,15 @@
 
   tasks:
 
+    - name: Get show version
+      cisco.ios.ios_command:
+        commands:
+          - show version
+      register: version_output
+
     - name: Render base config from template
       ansible.builtin.template:
-        src: "{{playbook_dir }}/templates/router_config.j2"
+        src: "{{ playbook_dir }}/templates/router_config.j2"
         dest: "/tmp/router_config.cfg"
       delegate_to: localhost
 
