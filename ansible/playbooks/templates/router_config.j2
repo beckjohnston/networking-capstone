@@ -12,8 +12,6 @@ vrf definition GS
 !
 logging persistent size 1000000 filesize 8192 immediate
 !
-no aaa new-model
-!
 ip vrf {{ vpn_connection_id.value }}
  rd 64525:1
  route-target export 64525:0

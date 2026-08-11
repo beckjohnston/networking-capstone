@@ -154,7 +154,7 @@ jobs:
             terraform -chdir=terraform output -json > "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all/output.json"
             ansible-playbook \
             -i ansible/inventory/aws_ec2.yml \
-            ansible/playbooks/router_config.yml -vvvv
+            ansible/playbooks/router_config.yml
         
       - name: Clean up key
         if: always()
