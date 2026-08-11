@@ -3,7 +3,7 @@ ansible_connection: network_cli
 ansible_network_cli_ssh_type: libssh
 ansible_user: ansible
 ansible_password: Cisco123!
-ansible_libssh_hostkeys: ssh-rsa
+ansible_libssh_hostkeys: rsa-sha2-256,rsa-sha2-512
 ansible_become: yes
 ansible_become_method: enable
 ansible_become_password: Cisco123!
