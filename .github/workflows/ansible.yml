@@ -133,14 +133,14 @@ jobs:
           -e "grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" \
           ansible/playbooks/install_observability.yml
 
-      #- name: Setup Terraform
-      #  if: github.event.inputs.playbook == 'router_config.yml'
-      #  uses: hashicorp/setup-terraform@v3
+      - name: Setup Terraform
+        if: github.event.inputs.playbook == 'router_config.yml'
+        uses: hashicorp/setup-terraform@v3
 
-      #- name: Terraform init
-      #  if: github.event.inputs.playbook == 'router_config.yml'
-      #  working-directory: ./terraform   # adjust to wherever your .tf files live
-      #  run: terraform init
+      - name: Terraform init
+        if: github.event.inputs.playbook == 'router_config.yml'
+        working-directory: ./terraform   # adjust to wherever your .tf files live
+        run: terraform init
 
       - name: Run router config playbook
         if: github.event.inputs.playbook == 'router_config.yml' && github.event_name == 'pull_request'
@@ -148,14 +148,13 @@ jobs:
           ANSIBLE_HOST_KEY_CHECKING: "False"
           ANSIBLE_CONFIG: ansible/ansible.cfg
         run: |
+            ansible-galaxy collection install cisco.ios
+            mkdir "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all"
+            terraform -chdir=terraform output -json > "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all/output.json"
             ansible-playbook \
             -i ansible/inventory/aws_ec2.yml \
             -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
             ansible/playbooks/router_config.yml
-#          ansible-galaxy collection install cisco.ios
-#          mkdir "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all"
-#          terraform -chdir=terraform output -json > "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all/output.json"
-       
         
       - name: Clean up key
         if: always()
