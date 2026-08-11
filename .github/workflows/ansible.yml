@@ -134,6 +134,7 @@ jobs:
           ANSIBLE_CONFIG: ansible/ansible.cfg
         run: |
           ansible-galaxy collection install cisco.ios
+          ansible routers -m cisco.ios.ios_command -a "commands='show version'"
           mkdir "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all"
           terraform -chdir=terraform output -json > "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all/output.json"
           ansible-playbook \
