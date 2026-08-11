@@ -133,7 +133,6 @@ jobs:
           ANSIBLE_HOST_KEY_CHECKING: "False"
           ANSIBLE_CONFIG: ansible/ansible.cfg
         run: |
-          terraform -chdir=terraform output -json > "${GITHUB_WORKSPACE}/ansible/group_vars/all/output.json"
           cat "${GITHUB_WORKSPACE}/ansible/group_vars/all/output.json"
           ansible-playbook \
             -i ansible/inventory/aws_ec2.yml \
