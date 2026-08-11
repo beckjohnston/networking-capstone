@@ -61,6 +61,7 @@ resource "aws_security_group" "app" {
 
 
 # Grafana
+
 resource "aws_security_group" "grafana" {
   name        = "capstone-grafana-sg"
   description = "Grafana web access"
@@ -79,7 +80,7 @@ resource "aws_security_group" "grafana" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
