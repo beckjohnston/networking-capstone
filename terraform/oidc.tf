@@ -1,6 +1,6 @@
 variable "github_repo" {
   type        = string
-  description = "org/repo that is allowed to assume the deploy role, e.g. vishal/networking-capstone"
+  description = "GitHub repository allowed to assume the deploy role"
 }
 
 data "tls_certificate" "github" {
@@ -32,7 +32,10 @@ data "aws_iam_policy_document" "github_trust" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo}:*"]
+
+      values = [
+        "repo:beckjohnston@278410941/networking-capstone@1316170394:*"
+      ]
     }
   }
 }
@@ -45,6 +48,33 @@ resource "aws_iam_role" "github_actions" {
 resource "aws_iam_role_policy_attachment" "github_actions_admin" {
   role       = aws_iam_role.github_actions.name
   policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
+}
+
+resource "aws_iam_role_policy" "github_actions_iam_read" {
+  name = "github-actions-terraform-iam-read"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Effect = "Allow"
+
+        Action = [
+          "iam:GetOpenIDConnectProvider",
+          "iam:GetRole",
+          "iam:GetRolePolicy",
+          "iam:ListRolePolicies",
+          "iam:ListAttachedRolePolicies",
+          "iam:GetPolicy",
+          "iam:GetPolicyVersion"
+        ]
+
+        Resource = "*"
+      }
+    ]
+  })
 }
 
 output "github_actions_role_arn" {
