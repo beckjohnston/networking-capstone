@@ -6,5 +6,6 @@ ansible_password: Cisco123!
 ansible_become: yes
 ansible_become_method: enable
 ansible_become_password: Cisco123!
+ansible_paramiko_look_for_keys: false
 ansible_command_timeout: 60
 ansible_connect_timeout: 60
