@@ -56,10 +56,12 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -input=false #| tee /tmp/tfplan.txt
+        id: plan
+        run: terraform plan -input=false -no-color #| tee /tmp/tfplan.txt
         #run: terraform plan -input=false -var="grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" | tee /tmp/tfplan.txt
 
-      #- name: Post Plan to Summary
+      - name: Post Plan to Summary
+        run: echo "${{ steps.plan.outputs.stdout }}" >> $GITHUB_STEP_SUMMARY
       #  run: cat /tmp/tfplan.txt >> $GITHUB_STEP_SUMMARY
 
       - name: Post plan to PR
@@ -67,21 +69,15 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const output = `${{ steps.ansible.outputs.ansible_output }}`;
-            
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
+            const output = `\`\`\` ${{ steps.plan.outputs.stdout }} \`\`\``;
             
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
+              body: output
             });
             
-  
   terraform-apply:
     name: Apply
     runs-on: ubuntu-latest
@@ -105,11 +101,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Terraform Init
-        run: terraform init
+      #- name: Terraform Init
+      #  run: terraform init
 
-      - name: Terraform Validate
-        run: terraform validate
+      #- name: Terraform Validate
+      #  run: terraform validate
 
       - name: Terraform Apply
         run: terraform apply -auto-approve -input=false #| tee /tmp/tfplan.txt

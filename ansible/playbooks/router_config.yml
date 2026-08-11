@@ -12,25 +12,21 @@
 # - see README for how and where to store the output.json from Terraform
 
 - name: Render and deploy per-router configuration
-  hosts: tag_Role_router
+#  hosts: tag_Role_router
+  hosts: routers
   gather_facts: false
 
   tasks:
 
-    - name: Check if JSON file exists
-      stat:
-        path: "./ansible/group_vars/all/output.json"
-      register: json_file_status
-      delegate_to: localhost
-
-    - name: Fail if JSON file is missing
-      fail:
-        msg: "output.json not found in ./ansible/group_vars/all"
-      when: not json_file_status.stat.exists
+    - name: Get show version
+      cisco.ios.ios_command:
+        commands:
+          - show version
+      register: version_output
 
     - name: Render base config from template
       ansible.builtin.template:
-        src: templates/router_config.j2
+        src: "{{ playbook_dir }}/templates/router_config.j2"
         dest: "/tmp/router_config.cfg"
       delegate_to: localhost
 

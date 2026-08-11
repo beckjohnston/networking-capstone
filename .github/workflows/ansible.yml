@@ -61,6 +61,7 @@ jobs:
 
       - name: Dry-run diff 
         id : ansible
+        if: github.event.inputs.playbook != 'router_config.yml'
         continue-on-error: true
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
@@ -131,13 +132,12 @@ jobs:
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
           ANSIBLE_CONFIG: ansible/ansible.cfg
-        working-directory: ./terraform   # adjust to wherever your .tf files live
         run: |
-          mkdir -p ../ansible/group_vars/all
-          terraform output -json > ../ansible/group_vars/all/output.json
-          cd ..
+          ansible-galaxy collection install cisco.ios
+          mkdir "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all"
+          terraform -chdir=terraform output -json > "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all/output.json"
           ansible-playbook \
-            -i ansible/inventory/aws_ec2.yml \
+            -i ansible/inventory/inventory.yml \
             -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
             ansible/playbooks/router_config.yml
         
