@@ -38,7 +38,7 @@ username automate privilege 15 secret Cisco123!
 !
 redundancy
 !
-crypto keyring keyring-{{ vpn_connection_id.value }} 
+crypto keyring keyring-{{ vpn_connection_id.value }}-1 
   local-address GigabitEthernet1
   pre-shared-key address {{ router_vpn_public_ip.value }} key {{ vpn_tunnel1_preshared_key.value }}
 !
@@ -48,8 +48,8 @@ crypto isakmp policy 200
  group 2
  lifetime 28800
 crypto isakmp keepalive 10 10 periodic
-crypto isakmp profile isakmp-{{ vpn_connection_id.value }}
-   keyring keyring-{{ vpn_connection_id.value }}
+crypto isakmp profile isakmp-{{ vpn_connection_id.value }}-1
+   keyring keyring-{{ vpn_connection_id.value }}-1
    match identity address {{ router_vpn_public_ip.value }} 255.255.255.255 
    local-address GigabitEthernet1
    rekey
