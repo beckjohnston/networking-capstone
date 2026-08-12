@@ -135,11 +135,11 @@ jobs:
           ansible/playbooks/install_observability.yml
 
       - name: Setup Terraform
-        if: github.event.inputs.playbook == 'router_config.yml'
+        if: github.event.inputs.playbook == 'router_config.yml' || github.events.inputs.playbook == 'router_init.yml'
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform init
-        if: github.event.inputs.playbook == 'router_config.yml'
+        if: github.event.inputs.playbook == 'router_config.yml' || github.event.inputs.playbook == 'router_init.yml'
         working-directory: ./terraform   # adjust to wherever your .tf files live
         run: terraform init
 
