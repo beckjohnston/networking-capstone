@@ -132,7 +132,7 @@ jobs:
             ansible-playbook \
             -i ansible/inventory/aws_ec2.yml \
             -e "cisco_password=${{ secrets.CISCO_PASSWORD }}" \
-            -e "ansible_user = ec2-user"
+            -e "ansible_user = ec2-user" \
             ansible/playbooks/router_init.yml
 
       - name: Run verify playbook
