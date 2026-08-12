@@ -9,7 +9,7 @@
 #   ansible-playbook \
 #     -i ansible/inventory/aws_ec2.yml \
 #     -e "ansible_ssh_private_key_file=${{ secrets.EC2_INSTANCES_PRIVATE_KEY }}" \
-#     -e "cisco_password=${{ secrets.cisco_password }}"
+#     -e "cisco_password=${{ secrets.CISCO_PASSWORD }}"
 #     ansible/playbooks/router_config.yml
 #
 # **MUST HAVE output.json LOCATED IN THE ansible/inventory/group_vars/all FOLDER** 

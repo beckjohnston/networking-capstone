@@ -141,6 +141,7 @@ Terraform also manages the supporting infrastructure required to operatethis env
  ```
    ansible-playbook \
       -i ansible/inventory/aws_ec2.yml \
+      -e "cisco_password=${{ secrets.CISCO_PASSWORD }}" \
       ansible/playbooks/router_config.yml
 ```  
  - Reloads at the end of the script, so it will take several minutes before the router is able to be accessed again
@@ -154,6 +155,7 @@ Terraform also manages the supporting infrastructure required to operatethis env
 
    ansible-playbook \
       -i ansible/inventory/aws_ec2.yml \
+      -e "cisco_password=${{ secrets.cisco_password }}" \
       ansible/playbooks/router_config.yml
 ```  
 
