@@ -28,9 +28,6 @@ multilink bundle-name authenticated
 !
 crypto pki trustpoint TP-self-signed-572041569
  enrollment selfsigned
-subject-name cn=IOS-Self-Signed-Certificate-572041569
- revocation-check none
- rsakeypair TP-self-signed-572041569
 !
 crypto pki certificate chain TP-self-signed-572041569
  certificate self-signed 01
@@ -78,7 +75,7 @@ crypto keyring keyring-{{ vpn_connection_id.value }}-1
 crypto isakmp policy 200
  encr aes
  authentication pre-share
- group 2
+ group 14
  lifetime 28800
 crypto isakmp keepalive 10 10 periodic
 crypto isakmp profile isakmp-{{ vpn_connection_id.value }}-1
@@ -95,7 +92,7 @@ no crypto ipsec nat-transparency udp-encapsulation
 !
 crypto ipsec profile ipsec-vpn-aws
  set transform-set ipsec-prop-vpn-aws 
- set pfs group2
+ set pfs group14
 !
 interface Tunnel1
  description {{ vpn_connection_id.value }} from TGW to {{ customer_gateway_id.value }}
