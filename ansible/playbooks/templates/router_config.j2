@@ -12,8 +12,6 @@ vrf definition GS
 !
 logging persistent size 1000000 filesize 8192 immediate
 !
-no aaa new-model
-!
 ip vrf {{ vpn_connection_id.value }}
  rd 64525:1
  route-target export 64525:0
@@ -30,64 +28,28 @@ multilink bundle-name authenticated
 !
 crypto pki trustpoint TP-self-signed-572041569
  enrollment selfsigned
-subject-name cn=IOS-Self-Signed-Certificate-572041569
- revocation-check none
- rsakeypair TP-self-signed-572041569
-!
-!
-crypto pki certificate chain TP-self-signed-572041569
- certificate self-signed 01
-  3082032E 30820216 A0030201 02020101 300D0609 2A864886 F70D0101 05050030 
-  30312E30 2C060355 04031325 494F532D 53656C66 2D536967 6E65642D 43657274 
-  69666963 6174652D 35373230 34313536 39301E17 0D313931 30313031 34303631 
-  355A170D 33303031 30313030 30303030 5A303031 2E302C06 03550403 1325494F 
-  532D5365 6C662D53 69676E65 642D4365 72746966 69636174 652D3537 32303431 
-  35363930 82012230 0D06092A 864886F7 0D010101 05000382 010F0030 82010A02 
-  82010100 A974EDB7 292BBB6A 09026F6A 381F7852 714775E3 E25F1F89 CED40FCB 
-  F45204F9 2F2F5FEE C46A9D16 A8D7307A C5433234 10D3F709 B4B18B3D 009B4A7A 
-  85980EEB 1282D1F7 C3CD4429 16042D4D 544315F4 E3ABA673 21E66C52 187AD1E6 
-  6B21F98A F0537D0A 8171618E 6CDF3B70 E2C8B553 8096C2D6 B4CD1AE4 B6DFD615 
-  844924B8 83DBE166 3CBC90F1 889CB00F 1644ECCE F2E70D81 CA35B555 D9757BE4 
-  34440FD9 D15580FA C50181CD D646AB6C 22F707A7 1D9F98CA 19897AF4 7488762B 
-  35ECA78F D2B249C7 8079255F 72BE5CF8 214B5135 E97B1104 A9CB449E A4A1D996 
-  9B99EC0E 18EF94FE FE73706A BF417262 12771D33 FF61A325 4479CAFB 10D0EEAA 
-  810E3437 02030100 01A35330 51300F06 03551D13 0101FF04 05300301 01FF301F 
-  0603551D 23041830 16801476 E85FEE9B EAE114A4 74C542FD E923856D 6F17F830 
-  1D060355 1D0E0416 041476E8 5FEE9BEA E114A474 C542FDE9 23856D6F 17F8300D 
-  06092A86 4886F70D 01010505 00038201 010043A6 03287F7E 1F13A7D4 26D661FE 
-  D11FED41 FE195D3E 6ADEA111 267C534B 266F587A 6A2F395D C50F5894 4C01F62B 
-  A179B852 F5F8ED62 DFF35587 3CFF352C 523F8D3D 8A786E61 A73EA8BB C8FC0A8D 
-  C2F0C260 0BB25D28 01B26B2B 27D71A31 2CE81DA5 6296D4AA 756A6658 0ADB89FB 
-  52BE1E9F A8BF17AA B2A0379A 1921AF64 834455CF B6307205 CE12C83A 2D29AEF2 
-  D79B79F7 9701F86E EB51B8E2 95BA7D5A C67A05F8 2AA7A8E0 3626D155 FC2D79EC 
-  9506D897 D79B8E65 A1D89F8A 6EC21FD1 15BFBD79 8A6FEB77 15C10DEE 0A50A7A5 
-  C8109573 9C58A869 D2740BC4 61D953F2 7AA92870 69BF035C 08DA0EFB B4AB9AC1 
-  BD4DB053 66ADD9E3 B5957D2B 8E467A91 258A
-  	quit
 !
 license udi pid CSR1000V sn 9YGGWBVUY3N
 no license smart enable
 diagnostic bootup level minimal
-!
-spanning-tree extend system-id
 !
 username ec2-user privilege 15 secret Cisco123!
 username automate privilege 15 secret Cisco123!
 !
 redundancy
 !
-crypto keyring keyring-{{ vpn_connection_id.value }} 
+crypto keyring keyring-{{ vpn_connection_id.value }}-1 
   local-address GigabitEthernet1
   pre-shared-key address {{ router_vpn_public_ip.value }} key {{ vpn_tunnel1_preshared_key.value }}
 !
 crypto isakmp policy 200
  encr aes
  authentication pre-share
- group 2
+ group 14
  lifetime 28800
 crypto isakmp keepalive 10 10 periodic
-crypto isakmp profile isakmp-{{ vpn_connection_id.value }}
-   keyring keyring-{{ vpn_connection_id.value }}
+crypto isakmp profile isakmp-{{ vpn_connection_id.value }}-1
+   keyring keyring-{{ vpn_connection_id.value }}-1
    match identity address {{ router_vpn_public_ip.value }} 255.255.255.255 
    local-address GigabitEthernet1
    rekey
@@ -100,7 +62,7 @@ no crypto ipsec nat-transparency udp-encapsulation
 !
 crypto ipsec profile ipsec-vpn-aws
  set transform-set ipsec-prop-vpn-aws 
- set pfs group2
+ set pfs group14
 !
 interface Tunnel1
  description {{ vpn_connection_id.value }} from TGW to {{ customer_gateway_id.value }}
