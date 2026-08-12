@@ -33,9 +33,6 @@ license udi pid CSR1000V sn 9YGGWBVUY3N
 no license smart enable
 diagnostic bootup level minimal
 !
-username ec2-user privilege 15 secret Cisco123!
-username automate privilege 15 secret Cisco123!
-!
 redundancy
 !
 crypto keyring keyring-{{ vpn_connection_id.value }}-1 
