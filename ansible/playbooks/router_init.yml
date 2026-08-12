@@ -1,0 +1,85 @@
+---
+# Pushes local-auth/SSH hardening config to a Cisco Catalyst router,
+# but ONLY once the router has already been through initial setup.
+# Also includes license required to run the crypto commands
+# Reloads whenver the configuration is complete
+#
+# Requires the cisco.ios collection:
+#   ansible-galaxy collection install cisco.ios
+#
+# How to run:
+#   ansible-playbook \
+#     -i ansible/inventory/aws_ec2.yml \
+#     -e "ansible_ssh_private_key_file=${{ secrets.EC2_INSTANCES_PRIVATE_KEY }}" \
+#     -e "cisco_password=${{ secrets.cisco_password }}"
+#     ansible/playbooks/router_init.yml
+ 
+- name: Push post-initialization config to Catalyst router
+  hosts: tag_Role_router
+  gather_facts: no
+  connection: network_cli
+  vars:
+    ansible_network_os: cisco.ios.ios
+    ansible_connection: network_cli
+ 
+  tasks:
+    - name: Gather device facts
+      cisco.ios.ios_facts:
+        gather_subset:
+          - min
+ 
+    - name: Determine whether the router has already been initialized
+      set_fact:
+        router_initialized: "{{ ansible_net_hostname is defined and ansible_net_hostname != 'Router' }}"
+ 
+    - name: Show initialization status
+      debug:
+        msg: >-
+          Router {{ inventory_hostname }} initialization status:
+          {{ 'INITIALIZED - proceeding' if router_initialized else 'NOT INITIALIZED - skipping config push' }}
+ 
+    - name: Push local auth / SSH access configuration
+      when: router_initialized
+      cisco.ios.ios_config:
+        lines:
+          - "enable secret {{ cisco_password }}"
+          - "username ansible privilege 15 secret {{ cisco_password }}"
+        parents: []
+      register: config_result
+
+    - name: Add the network advantage license
+      when: router_initialized
+      cisco.ios.ios_config:
+        lines:
+          - "license boot level network-advantage addon dna-advantage"
+        parents: []
+      register: config_result
+ 
+    - name: Configure VTY lines for local login and SSH-only access
+      when: router_initialized
+      cisco.ios.ios_config:
+        lines:
+          - "transport input ssh"
+        parents: "line vty 0 4"
+ 
+    - name: Save running-config to startup-config (write memory)
+      when: router_initialized and (config_result.changed | default(false))
+      cisco.ios.ios_config:
+        save_when: always
+ 
+    - name: Skip notice if router is not yet initialized
+      when: not router_initialized
+      debug:
+        msg: "Skipping config push - router {{ inventory_hostname }} does not appear to be initialized yet."
+
+    - name: Reload the router
+      when: router_initialized
+      cisco.ios.ios_command:
+        commands:
+          - command: "reload"
+            prompt:
+              - "confirm"
+            answer:
+              - "\r"
+      ignore_errors: yes
+ 
