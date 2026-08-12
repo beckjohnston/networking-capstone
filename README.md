@@ -202,6 +202,12 @@ Terraform also manages the supporting infrastructure required to operatethis env
 - Allows for a terraform destroy option for the clean deletion of resources.
 
 
+### terraform-drift.yml
+- Cron job that runs every 6 hours.
+- Manual trigger for testing.
+- Detects configuration drift and creates a github issue.
+- The issue can only be resolved through a pull request to fix the drift.
+
 
 Transit ASN: 64512
 
