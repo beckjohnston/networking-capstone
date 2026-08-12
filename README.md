@@ -1,67 +1,23 @@
 # networking-capstone
-## Network Infrastructure
-<img width="1105" height="712" alt="Screenshot 2026-08-12 111610" src="https://github.com/user-attachments/assets/e4798d76-ef79-4615-9f24-942756e9bd08" />
+## Project Overview
+This project creates an end-to-end pipeline to deploy and configure network infrastructure. The infrastructure is deployed through Terraform, an infrastructure as code (IaC) tool. IaC deploys the infrastructure according to the same rules each time, reducing human error and the need for manual deployment. Terraform interfaces directly with AWS and can create and destroy cloud devices. The infrastructure is configured through Ansible, which can install all of the needed tools onto each device so that developers do not have to do it manually. This decreases chance of misconfiguration and saves time for large networks where many devices share the same configuration. Both the network deployment and configuration will be triggered by a pull request in the GitHub repository. The GitHub workflow will test the code for errors and then update the existing network while still allowing for human oversight through required reviewers.
 
+## Terraform
+### Overview
 
-## To Do
+The Terraform portion of the Networking Capstone provisions the complete AWS infrastructure used by the project. The environment is separated into three VPCs: an Application VPC for the bastion and private application servers, an Observability VPC for Grafana and Prometheus, and a Network VPC for the Cisco Catalyst 8000V router. Terraform also provisions the routing infrastructure connecting these environments, including Internet Gateways, a NAT Gateway, AWS Transit Gateway, Transit Gateway attachments, an AWS Customer Gateway, and an AWS Site-to-Site VPN used for BGP connectivity between AWS and the Cisco router. In addition to the network itself, Terraform manages the project's security groups, EC2 instances, Elastic IP addresses, SSH key resources, remote Terraform state, state locking, and AWS IAM resources used for GitHub OIDC authentication.
 
- - Terraform project
- - Ansible files
- - GitHub Actions/CI CD
- - Presentation work
- - Create a diagram for the README/presentation
+### Application VPC
 
-### Terraform Project
-Create a terraform project
+The Application VPC uses the CIDR range 10.0.0.0/16 and contains one public subnet and two private subnets. The public subnet, 10.0.1.0/24,contains the bastion host and NAT Gateway. The private application subnets use 10.0.2.0/24 and 10.0.3.0/24 and each contain an Amazon Linux EC2 application instance. The bastion host is deployed in the public subnet with a public IP address and provides an administrative entry point into the application environment. The two application servers remain in private subnets and do not require public IP addresses. Terraform assigns the application instances the private_app role tag and places them behind the application security group. Terraform also provisions an Elastic IP and NAT Gateway in the Application VPC public subnet. Both private application subnets use a dedicated private route table whose default route points to the NAT Gateway. This allows the private instances to initiate outbound Internetconnections while remaining inaccessible directly from the publicInternet.
 
-### Ansible Project
- - Create and connect various nodes.
-   - Detail where the inventory file can be changed in case the node's IP changes
-   - Make it possible to create the inventory file using the Terraform output via GitHub Actions
- - Create scripts for verifying and connecting to the created instances
-    - Try to make example scripts for httpd, different software downloads, etc.
-    - Make the program OS agnostic. Start with compatibility with Amazon Linux.
- - Try to make the project as easy to modify as possible. Variable files, etc.
-    - Host names for nodes should be easily marked and detailed instructions for modification should be available in the README.md.
- - Attach monitoring software such as Grafana or Prometheus.
-    - Find a way to install the software onto the nodes using Docker.
-    - Note the exact URL necessary for accessing the software in the README.md file.
-
-### GitHub Action - CI/CD
- - Configure the workflow to be triggered by a pull request.
- - Perform a dry run in Terraform and Ansible prior to applying changes.
-
-### Presentation Work
- - Finalize the README.md file with detailed descriptions for the use of all features.
-   - Highlight how to modify the Terraform and Ansible files based on varying needs or changes
- - Create a slide deck for the in-person presentation.
- - Either get the project working on a laptop for use in the presentation or create a video of how the project functions.
-   - A video might need to be edited as Terraform can be very slow when being run
-
-
-
-# Terraform
-## Overview
-
-The Terraform portion of the Networking Capstone provisions the completeAWS infrastructure used by the project. The environment is separatedinto three VPCs: an Application VPC for the bastion and privateapplication servers, an Observability VPC for Grafana and Prometheus,and a Network VPC for the Cisco Catalyst 8000V router. Terraform alsoprovisions the routing infrastructure connecting these environments,including Internet Gateways, a NAT Gateway, AWS Transit Gateway, TransitGateway attachments, an AWS Customer Gateway, and an AWS Site-to-SiteVPN used for BGP connectivity between AWS and the Cisco router.
-
-In addition to the network itself, Terraform manages the project'ssecurity groups, EC2 instances, Elastic IP addresses, SSH key resources,remote Terraform state, state locking, and AWS IAM resources used forGitHub OIDC authentication.
-
-## Application VPC
-
-The Application VPC uses the CIDR range 10.0.0.0/16 and contains onepublic subnet and two private subnets. The public subnet, 10.0.1.0/24,contains the bastion host and NAT Gateway. The private applicationsubnets use 10.0.2.0/24 and 10.0.3.0/24 and each contain an AmazonLinux EC2 application instance.
-
-The bastion host is deployed in the public subnet with a public IPaddress and provides an administrative entry point into the applicationenvironment. The two application servers remain in private subnets anddo not require public IP addresses. Terraform assigns the applicationinstances the private_app role tag and places them behind theapplication security group.
-
-Terraform also provisions an Elastic IP and NAT Gateway in theApplication VPC public subnet. Both private application subnets use adedicated private route table whose default route points to the NATGateway. This allows the private instances to initiate outbound Internetconnections while remaining inaccessible directly from the publicInternet.
-
-## Observability VPC
+### Observability VPC
 
 The Observability VPC uses the CIDR range 10.1.0.0/16. It contains apublic subnet at 10.1.1.0/24 and a private subnet at 10.1.2.0/24.Terraform provisions the Grafana EC2 instance in the public subnet andthe Prometheus EC2 instance in the private subnet.
 
 Grafana receives a public IP address and uses a dedicated security groupthat permits access to its web interface on TCP port 3000. Prometheusremains in the private subnet and uses its own security group.Separating these resources allows the user-facing monitoring interfaceand the internal monitoring service to have different network exposure.
 
-## Network VPC and Cisco Catalyst 8000V
+### Network VPC and Cisco Catalyst 8000V
 
 The Network VPC uses the CIDR range 10.2.0.0/16, with the routerinfrastructure located in the 10.2.1.0/24 public subnet. Terraformprovisions a Cisco Catalyst 8000V EC2 instance using the CiscoMarketplace AMI ami-0be014c32727a2444 and the c5.large instancetype.
 
@@ -69,13 +25,13 @@ The Catalyst router is tagged with Name = catalyst-router andRole = router. Sour
 
 A dedicated Elastic IP is allocated and associated with the Catalystinstance. This gives the router a stable public endpoint and allows thesame address to be referenced by the AWS Customer Gateway resource usedfor the VPN connection.
 
-## Internet and Private Routing
+### Internet and Private Routing
 
 Terraform provisions an Internet Gateway for each of the three VPCs. TheApplication, Observability, and Network public route tables each usetheir respective Internet Gateway as the destination for the 0.0.0.0/0default route. This provides Internet connectivity to resources locatedin the public subnets.
 
 The private Application VPC subnets use a separate route table. Insteadof routing 0.0.0.0/0 directly to an Internet Gateway, this route tablepoints to the NAT Gateway in the public subnet. The two privateapplication subnets are associated with this private route table,allowing outbound connectivity while preserving their privateaddressing.
 
-## AWS Transit Gateway
+### AWS Transit Gateway
 
 Terraform provisions an AWS Transit Gateway to act as the centralizedAWS routing layer for the project. The Transit Gateway uses Amazon-sideASN 64512. Default Transit Gateway route-table association andpropagation are disabled so that the project's associations and routepropagation are explicitly controlled by Terraform.
 
@@ -83,7 +39,7 @@ A dedicated Transit Gateway route table is created and used for theproject. Terr
 
 Each VPC attachment is associated with the dedicated Transit Gatewayroute table. Route propagation is also enabled for the three VPCattachments so their networks can be represented in the Transit Gatewayrouting environment.
 
-## Customer Gateway, Site-to-Site VPN, and BGP Infrastructure
+### Customer Gateway, Site-to-Site VPN, and BGP Infrastructure
 
 Terraform creates an AWS Customer Gateway representing the CiscoCatalyst 8000V. The Customer Gateway uses the Catalyst router's ElasticIP as its endpoint and uses BGP ASN 64525. The AWS Transit Gatewayuses ASN 64512, creating the two autonomous systems required for theproject's eBGP relationship.
 
@@ -93,19 +49,19 @@ Two VPN tunnel networks are defined in Terraform. Tunnel 1 uses169.254.185.68/30
 
 This infrastructure gives the project a Terraform-managed path from theCisco Catalyst router through the Site-to-Site VPN to AWS TransitGateway, while also connecting all three project VPCs to the TransitGateway.
 
-## Security Groups
+### Security Groups
 
 Terraform creates separate security groups for the major infrastructureroles. The bastion security group permits SSH access and outboundconnectivity. The application security group allows SSH access from thebastion and permits TCP port 9100 traffic used by the application'smonitoring architecture. Grafana has a dedicated security group thatpermits TCP port 3000, while Prometheus has its own rules formonitoring-related traffic.
 
 The Cisco router uses a dedicated router security group. It permits SSHon TCP port 22 and BGP on TCP port 179, with outbound trafficpermitted. Together with disabled EC2 source/destination checking, theserules allow the Catalyst instance to function as routing infrastructurerather than as a standard application host.
 
-## SSH Key Infrastructure
+### SSH Key Infrastructure
 
 Terraform defines a 4096-bit RSA private key using the TLS provider. Thepublic portion of the generated key is registered with AWS as an EC2 keypair, while the private portion is stored in AWS Systems ManagerParameter Store as an encrypted SecureString.
 
 The intended parameter path is /networking-capstone/dev/ssh-key. Thisdesign keeps the generated private key in AWS rather than storing itdirectly in the Git repository while allowing the EC2 infrastructure touse the corresponding public key.
 
-## Terraform Remote State
+### Terraform Remote State
 
 Terraform uses an S3 backend for shared remote state. The state bucketis beck-networking-capstone-tfstate-2026, and the state object isstored at networking-capstone/terraform.tfstate. The S3 stateinfrastructure uses versioning, public-access blocking, server-sideencryption, and deletion protection.
 
@@ -117,28 +73,32 @@ Terraform provisions an AWS IAM OpenID Connect provider for GitHub usingtoken.ac
 
 The role has AWS PowerUserAccess attached. This infrastructureprovides the AWS identity and permissions used by the project'sTerraform pipeline without requiring permanent AWS access keys to beembedded directly in the repository configuration.
 
-## Terraform Outputs
+### Terraform Outputs
 
 Terraform exposes the identifiers and addresses needed to reference thedeployed infrastructure. These outputs include the three VPC IDs, subnetIDs, security group IDs, public and private EC2 addresses, NAT Gatewayinformation, router management and inside-interface addresses, therouter VPN Elastic IP, Transit Gateway ID and ASN, Customer Gateway ID,VPN connection ID, and the AWS-side and Cisco-side addresses for bothVPN tunnels.
 
 The BGP-related outputs are particularly important because they exposethe values generated or managed by the AWS infrastructure. The TransitGateway ASN identifies the AWS autonomous system, while the VPN tunneloutputs identify the AWS and Cisco BGP peer addresses for each tunnel.This allows the Terraform-managed AWS infrastructure to provide thenetwork values required for configuration of the Cisco side withouthard-coding deployed AWS resource identifiers elsewhere.
 
-## Infrastructure Summary
+### Infrastructure Summary
 
 Overall, the Terraform configuration creates the AWS foundation for thecapstone as a three-VPC environment connected through centralizedTransit Gateway routing. The Application VPC contains the bastion,private application instances, and NAT infrastructure; the ObservabilityVPC contains Grafana and Prometheus; and the Network VPC contains theCisco Catalyst 8000V. The Catalyst router is represented to AWS througha Customer Gateway and connects to the Transit Gateway through adynamically routed Site-to-Site VPN with two BGP-capable tunnels.
 
 Terraform also manages the supporting infrastructure required to operatethis environment, including Internet connectivity, route tables,security groups, Elastic IPs, SSH key resources, remote state, statelocking, and AWS IAM/OIDC resources. The result is an AWS networkingenvironment whose cloud infrastructure and routing components aredefined and maintained through Terraform.
-### Ansible
 
-#### Inventory
+### Network Infrastructure Diagram
+<img width="1105" height="712" alt="Screenshot 2026-08-12 111610" src="https://github.com/user-attachments/assets/e4798d76-ef79-4615-9f24-942756e9bd08" />
+
+## Ansible
+
+### Inventory
 
  - The inventory file automatically changes based on the instances configured in the targeted AWS account
  - Need to query AWS for the targeted hosts based off of the tags provided at initialization of the instances.
  - Also possible to query through GitHub Action, however that has limited use.
 
-#### Playbooks
+### Playbooks
 
-##### install_observability
+#### install_observability
 
  - Installs various packages on the targeted nodes. Bastion, Prometheus, Grafana in that order
 ```
@@ -153,7 +113,7 @@ Terraform also manages the supporting infrastructure required to operatethis env
  - The ssh private key will need to be retrieved from the output of the terraform file
  - The grafana password will need to be retrieved from the GitHub Secrets in order to be secure
 
-##### verify_connectivity
+#### verify_connectivity
 
  - Tests the connectivity between the public Bastion instance and the private application instances.
  ```
@@ -161,7 +121,7 @@ Terraform also manages the supporting infrastructure required to operatethis env
 ```
  - Runs based on the inventory file that queries the AWS account associated with terraform
 
-##### router_config
+#### router_config
  - Imports and runs the router_config.j2 template onto the Cisco Catalyst 8000V router.
 
  - **MUST HAVE output.json LOCATED IN THE ansible/group_vars/all FOLDER** 
@@ -183,34 +143,34 @@ Terraform also manages the supporting infrastructure required to operatethis env
 
  - See **LINK TO BGP DOCUMENTATION** for details on the implementation of router_config.j2
 
-#### Roles
+### Roles
 
-##### Grafana
+#### Grafana
 
  - Creates an instance of Grafana on the targeted node. Must be utilized with Prometheus.
  - Grafana password must be stored in GitHub secrets and called manually from GitHub Actions.
       ansible-playbook -i inventory_file playbook.yml -e "grafana_admin_password=password"
 
-##### Prometheus
+#### Prometheus
 
  - Creates an instance of Prometheus on the targeted node. 
  - Must be configured with Bastion to be able to scrape from VPC 1
 
-##### Bastion
+#### Bastion
 
  - Creates a link between a preapproved node and the targeted node regardless of whether they are on the same VPC.
  - Needs configuration for keys generated by Terraform, session recording is an option if needed, but needs configured
 
 
-### GitHub Actions
+## GitHub Actions
 
-#### ansible.yml
+### ansible.yml
  - Triggered by a pull request on the main branch for automated deployment.
  - Manually triggered on the test branch for debugging.
  - Performs a dry run and posts output as a comment in the pull request.
  - Runs the ansible playbooks.
 
-#### terraform.yml
+### terraform.yml
 - Triggered by a pull request on the main branch for automated deployment.
 - Manually triggered on the test branch for debugging.
 - Takes input of plan, apply, or destroy to determine which terraform command to run.
