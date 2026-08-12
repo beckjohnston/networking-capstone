@@ -147,9 +147,6 @@ jobs:
         run: terraform init
 
       - name: Terraform Destroy
-        run: |
-          terraform destroy -auto-approve \ 
-          $(terraform state list | grep -v '^data\.' | \ 
-          grep -v -E '^(aws_s3_bucket\.tf_state|aws_s3_bucket_public_access_block\.tf_state|aws_s3_bucket_server_side_encryption_configuration\.tf_state|aws_s3_bucket_versioning\.tf_state|aws_dynamodb_table\.tf_locks|aws_iam_openid_connect_provider\.github|aws_iam_role\.github_actions|aws_iam_role_policy\.github_actions_iam_read|aws_iam_role_policy_attachment\.github_actions_admin)$' | \
-          sed 's/^/-target=/')
+        run: terraform destroy -auto-approve -input=false
+        
         #run: terraform destroy -auto-approve -input=false -var="grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}"
