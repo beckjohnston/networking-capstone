@@ -1,8 +1,20 @@
-# networking-capstone
+# Networking-Capstone
+
 ## Project Overview
-This project creates an end-to-end pipeline to deploy and configure network infrastructure. The infrastructure is deployed through Terraform, an infrastructure as code (IaC) tool. IaC deploys the infrastructure according to the same rules each time, reducing human error and the need for manual deployment. Terraform interfaces directly with AWS and can create and destroy cloud devices. The infrastructure is configured through Ansible, which can install all of the needed tools onto each device so that developers do not have to do it manually. This decreases chance of misconfiguration and saves time for large networks where many devices share the same configuration. Both the network deployment and configuration will be triggered by a pull request in the GitHub repository. The GitHub workflow will test the code for errors and then update the existing network while still allowing for human oversight through required reviewers.
+
+ - Creates an end-to-end pipeline to deploy and configure network infrastructure through Terraform. 
+ - The Terraform implementation interfaces directly with AWS to create and destroy the necessary infrastructure components. 
+      **See [Terraform](#terraform) for details on the the components provided**
+
+ - The infrastructure is configured through Ansible, which implements the necessary configurations to all of the devices. 
+      **See [Ansible](#ansible) for details on the playbooks provided**
+
+ - All network deployment and configuration is triggered by pull request in the GitHub repository.
+ - GitHub will automatically test the code for errors and update the existing network while still allowing for human oversight through required reviewers.
+      **See [GitHub Actions](#github-actions) for detils on the workflows provided**
 
 ## Terraform
+
 ### Overview
 
 The Terraform portion of the Networking Capstone provisions the complete AWS infrastructure used by the project. The environment is separated into three VPCs: an Application VPC for the bastion and private application servers, an Observability VPC for Grafana and Prometheus, and a Network VPC for the Cisco Catalyst 8000V router. Terraform also provisions the routing infrastructure connecting these environments, including Internet Gateways, a NAT Gateway, AWS Transit Gateway, Transit Gateway attachments, an AWS Customer Gateway, and an AWS Site-to-Site VPN used for BGP connectivity between AWS and the Cisco router. In addition to the network itself, Terraform manages the project's security groups, EC2 instances, Elastic IP addresses, SSH key resources, remote Terraform state, state locking, and AWS IAM resources used for GitHub OIDC authentication.
@@ -186,6 +198,8 @@ Terraform also manages the supporting infrastructure required to operatethis env
 Transit ASN: 64512
 
   
- pptx link : https://onedrive.live.com/:p:/g/personal/2dc866dcd3e1fe1d/IQCzgyaUMomDQZJtofj93lLDATa5H89nk-nIbJanmtNGYMY?rtime=_v-9K4Dt3kg&redeem=aHR0cHM6Ly8xZHJ2Lm1zL3AvYy8yZGM4NjZkY2QzZTFmZTFkL0lRQ3pneWFVTW9tRFFaSnRvZmo5M2xMREFUYTVIODluay1uSWJKYW5tdE5HWU1ZP2U9Q1ZyZFcz
+[pptx link](https://onedrive.live.com/:p:/g/personal/2dc866dcd3e1fe1d/IQCzgyaUMomDQZJtofj93lLDATa5H89nk-nIbJanmtNGYMY?rtime=_v-9K4Dt3kg&redeem=aHR0cHM6Ly8xZHJ2Lm1zL3AvYy8yZGM4NjZkY2QzZTFmZTFkL0lRQ3pneWFVTW9tRFFaSnRvZmo5M2xMREFUYTVIODluay1uSWJKYW5tdE5HWU1ZP2U9Q1ZyZFcz)
 
-diagram link: https://lucid.app/lucidspark/e76ce0b0-7f29-45a7-ae42-e110fac401b8/edit?viewport_loc=-923%2C-602%2C1380%2C1313%2C0_0&invitationId=inv_f5e39814-dfb6-4755-9647-ad31873c111e
+[diagram link](https://lucid.app/lucidspark/e76ce0b0-7f29-45a7-ae42-e110fac401b8/edit?viewport_loc=-923%2C-602%2C1380%2C1313%2C0_0&invitationId=inv_f5e39814-dfb6-4755-9647-ad31873c111e)
+
+[Cisco Catalyst Transit VPC Documentation](https://www.cisco.com/c/en/us/td/docs/routers/C8000V/AWS/deploying-c8000v-on-amazon-web-services/deploy-transit-vpc-with-transit-gateway-aws.html#id_126960)
