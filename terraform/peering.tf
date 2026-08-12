@@ -63,3 +63,10 @@ resource "aws_route" "network_to_app" {
   destination_cidr_block    = "10.0.0.0/16"
   vpc_peering_connection_id = aws_vpc_peering_connection.app_network.id
 }
+
+# Bastion/public app subnet can reach the Observability VPC over peering
+resource "aws_route" "app_public_to_observability" {
+  route_table_id            = aws_route_table.app_public.id
+  destination_cidr_block    = "10.1.0.0/16"
+  vpc_peering_connection_id = aws_vpc_peering_connection.app_observability.id
+}

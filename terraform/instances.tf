@@ -84,7 +84,7 @@ resource "aws_instance" "app_private_2" {
 
 resource "aws_instance" "grafana" {
   ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t2.micro"
+  instance_type = "t3.small"
 
   subnet_id = aws_subnet.obs_public.id
 
@@ -96,16 +96,20 @@ resource "aws_instance" "grafana" {
 
   associate_public_ip_address = true
 
+  root_block_device {
+    volume_size = 30
+    volume_type = "gp3"
+  }
+
   tags = {
     Name = "grafana"
     Role = "grafana"
   }
 }
 
-
 resource "aws_instance" "prometheus" {
   ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t2.micro"
+  instance_type = "t3.small"
 
   subnet_id = aws_subnet.obs_private.id
 
@@ -114,6 +118,11 @@ resource "aws_instance" "prometheus" {
   ]
 
   key_name = var.key_name
+
+  root_block_device {
+    volume_size = 30
+    volume_type = "gp3"
+  }
 
   tags = {
     Name = "prometheus"
