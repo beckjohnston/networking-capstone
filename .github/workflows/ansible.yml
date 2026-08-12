@@ -130,10 +130,10 @@ jobs:
             mkdir "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all"
             terraform -chdir=terraform output -json > "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all/output.json"
             ansible-playbook \
-            -i ansible/inventory/aws_ec2.yml \
-            -e "cisco_password=${{ secrets.CISCO_PASSWORD }}" \
-            -e "ansible_user = ec2-user" \
-            ansible/playbooks/router_init.yml
+              -i ansible/inventory/aws_ec2.yml \
+              -e "cisco_password=${{ secrets.CISCO_PASSWORD }}" \
+              -e "ansible_user=ec2-user" \
+              ansible/playbooks/router_init.yml
 
       - name: Run verify playbook
         if: github.event.inputs.playbook  == 'verify_connectivity.yml' || github.event_name == 'pull_request'
