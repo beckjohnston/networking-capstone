@@ -109,8 +109,6 @@ ip tcp window-size 8192
 ip http server
 ip http authentication local
 ip http secure-server
-ip route 0.0.0.0 0.0.0.0 GigabitEthernet1 {{ bastion_public_ip.value }}
-ip route vrf GS 0.0.0.0 0.0.0.0 GigabitEthernet1 {{ bastion_public_ip.value }} global
 !
 ip ssh rsa keypair-name ssh-key
 ip ssh version 2
