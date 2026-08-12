@@ -11,6 +11,7 @@
 #   ansible-playbook \
 #     -i ansible/inventory/aws_ec2.yml \
 #     -e "ansible_ssh_private_key_file=${{ secrets.EC2_INSTANCES_PRIVATE_KEY }}" \
+#     -e "cisco_password=${{ secrets.cisco_password }}"
 #     ansible/playbooks/router_init.yml
  
 - name: Push post-initialization config to Catalyst router
@@ -41,8 +42,8 @@
       when: router_initialized
       cisco.ios.ios_config:
         lines:
-          - "enable secret Cisco123!"
-          - "username ansible privilege 15 secret Cisco123!"
+          - "enable secret {{ cisco_password }}"
+          - "username ansible privilege 15 secret {{ cisco_password }}"
         parents: []
       register: config_result
 
