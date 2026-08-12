@@ -110,6 +110,15 @@ jobs:
                 issue_number: context.issue.number,
                 body: output,
               });
+
+      - name: Setup Terraform
+        if: github.event.inputs.playbook == 'router_config.yml' || github.event.inputs.playbook == 'router_init.yml'
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform init
+        if: github.event.inputs.playbook == 'router_config.yml' || github.event.inputs.playbook == 'router_init.yml'
+        working-directory: ./terraform   # adjust to wherever your .tf files live
+        run: terraform init
               
       - name: Run router init playbook
         if: github.event.inputs.playbook == 'router_init.yml' || github.event_name == 'pull_request'
@@ -123,6 +132,7 @@ jobs:
             ansible-playbook \
             -i ansible/inventory/aws_ec2.yml \
             -e "cisco_password=${{ secrets.CISCO_PASSWORD }}" \
+            -e "ansible_user = ec2-user"
             ansible/playbooks/router_init.yml
 
       - name: Run verify playbook
@@ -147,15 +157,6 @@ jobs:
           -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
           -e "grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" \
           ansible/playbooks/install_observability.yml
-
-      - name: Setup Terraform
-        if: github.event.inputs.playbook == 'router_config.yml' || github.event.inputs.playbook == 'router_init.yml'
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Terraform init
-        if: github.event.inputs.playbook == 'router_config.yml' || github.event.inputs.playbook == 'router_init.yml'
-        working-directory: ./terraform   # adjust to wherever your .tf files live
-        run: terraform init
 
       - name: Run router config playbook
         if: github.event.inputs.playbook == 'router_config.yml' || github.event_name == 'pull_request'
