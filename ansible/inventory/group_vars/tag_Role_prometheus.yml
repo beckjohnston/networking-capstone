@@ -1,4 +1,4 @@
 ansible_ssh_common_args: >-
   -o StrictHostKeyChecking=no
   -o ProxyCommand="ssh -W %h:%p -i {{ ansible_ssh_private_key_file }}
-  -o StrictHostKeyChecking=no ec2-user@{{ groups['tag_Role_bastion'][0] }}"
+  -o StrictHostKeyChecking=no ec2-user@{{ groups['tag_Role_grafana'][0] }}"
