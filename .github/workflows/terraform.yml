@@ -125,6 +125,7 @@ jobs:
     name: Destroy
     runs-on: ubuntu-latest
     if: github.event.inputs.action == 'destroy'
+    needs: approval
     defaults:
       run:
         working-directory: ${{ env.WORKING_DIR }}
