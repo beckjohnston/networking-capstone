@@ -70,3 +70,11 @@ resource "aws_route" "app_public_to_observability" {
   destination_cidr_block    = "10.1.0.0/16"
   vpc_peering_connection_id = aws_vpc_peering_connection.app_observability.id
 }
+
+# Prometheus private subnet outbound Internet through Observability NAT Gateway
+
+resource "aws_route" "observability_private_default" {
+  route_table_id         = aws_route_table.obs_private.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.observability.id
+}
