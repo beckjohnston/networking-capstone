@@ -109,18 +109,6 @@ ip tcp window-size 8192
 ip http server
 ip http authentication local
 ip http secure-server
-ip route 0.0.0.0 0.0.0.0 GigabitEthernet1 100.64.127.225
-ip route vrf GS 0.0.0.0 0.0.0.0 GigabitEthernet1 100.64.127.225 global
-!
-ip ssh rsa keypair-name ssh-key
-ip ssh version 2
-ip ssh pubkey-chain
-  username ec2-user
-   key-hash ssh-rsa F1B0DF92FC2E25F7D98A01B99FCE5F13 ec2-user
-  username automate
-   key-hash ssh-rsa ED4B0757CE2AC22C89B28BE55EDE7691 
-ip ssh server algorithm authentication publickey
-ip scp server enable
 !
 ip access-list standard GS_NAT_ACL
  permit 192.168.35.0 0.0.0.255
@@ -130,7 +118,6 @@ control-plane
 line con 0
  stopbits 1
 line vty 0 4
- login local
  transport input ssh
 !
 app-hosting appid guestshell
