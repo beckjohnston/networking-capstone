@@ -1,17 +1,17 @@
 ---
-# catalyst_post_init_config.yml
-#
 # Pushes local-auth/SSH hardening config to a Cisco Catalyst router,
 # but ONLY once the router has already been through initial setup.
-#
-# "Initialized" here is detected by checking that the device hostname
-# is no longer the factory default ("Router"). Change the `when`
-# condition below if you have a better marker (e.g. a banner already
-# set, an NTP server configured, a marker line in the running-config,
-# etc).
+# Also includes license required to run the crypto commands
+# Reloads whenver the configuration is complete
 #
 # Requires the cisco.ios collection:
 #   ansible-galaxy collection install cisco.ios
+#
+# How to run:
+#   ansible-playbook \
+#     -i ansible/inventory/aws_ec2.yml \
+#     -e "ansible_ssh_private_key_file=${{ secrets.EC2_INSTANCES_PRIVATE_KEY }}" \
+#     ansible/playbooks/router_init.yml
  
 - name: Push post-initialization config to Catalyst router
   hosts: tag_Role_router
@@ -80,4 +80,5 @@
               - "confirm"
             answer:
               - "\r"
+        ignore_errors: yes
  

@@ -2,6 +2,9 @@
 # Sends and runs the router_config.j2 configuration to the Cisco Catalyst 8000V router located in VPC3
 # Host is tagged in terraform with Role = router
 #
+# Requires the cisco.ios collection:
+#   ansible-galaxy collection install cisco.ios
+#
 # How to run:
 #   ansible-playbook \
 #     -i ansible/inventory/aws_ec2.yml \
