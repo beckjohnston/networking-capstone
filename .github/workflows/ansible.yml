@@ -122,7 +122,7 @@ jobs:
             terraform -chdir=terraform output -json > "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all/output.json"
             ansible-playbook \
             -i ansible/inventory/aws_ec2.yml \
-            -e "cisco_password=${{ secrets.CISCO_PASSWORD }}"
+            -e "cisco_password=${{ secrets.CISCO_PASSWORD }}" \
             ansible/playbooks/router_init.yml
 
       - name: Run verify playbook
@@ -168,7 +168,7 @@ jobs:
             terraform -chdir=terraform output -json > "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all/output.json"
             ansible-playbook \
             -i ansible/inventory/aws_ec2.yml \
-            -e "cisco_password=${{ secrets.CISCO_PASSWORD }}"
+            -e "cisco_password=${{ secrets.CISCO_PASSWORD }}" \
             ansible/playbooks/router_config.yml
         
       - name: Clean up key
