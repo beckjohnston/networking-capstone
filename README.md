@@ -117,7 +117,6 @@ Terraform also manages the supporting infrastructure required to operatethis env
 
 #### router_init
  - Runs the initial configuration onto the router.
-
  ```
    ansible-playbook \
       -i ansible/inventory/aws_ec2.yml \
@@ -128,9 +127,10 @@ Terraform also manages the supporting infrastructure required to operatethis env
 #### router_config
  - Imports and runs the router_config.j2 template onto the Cisco Catalyst 8000V router.
 
- - **MUST HAVE output.json LOCATED IN THE ansible/group_vars/all FOLDER** 
-      terraform output -json > ./ansible/group_vars/all/output.json
+ - **MUST HAVE output.json LOCATED IN THE ansible/inventory/group_vars/all FOLDER** 
 ```
+   terraform -chdir=terraform output -json > "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all/output.json"
+
    ansible-playbook \
       -i ansible/inventory/aws_ec2.yml \
       ansible/playbooks/router_config.yml
@@ -144,7 +144,7 @@ Terraform also manages the supporting infrastructure required to operatethis env
       - vpn_tunnel1_router_inside_ip:     The Ip for the router side of the BGP tunnel
       - vpn_tunnel1_aws_inside_ip:        The IP for the AWS side of the BGP tunnel
 
- - See **LINK TO BGP DOCUMENTATION** for details on the implementation of router_config.j2
+ - See [BGP Documentation](#bgp-documentation) for details on the implementation of router_config.j2
 
 ### Roles
 
