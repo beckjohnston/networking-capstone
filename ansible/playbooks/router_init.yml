@@ -21,6 +21,7 @@
   vars:
     ansible_network_os: cisco.ios.ios
     ansible_connection: network_cli
+    ansible_user: ec2-user
  
   tasks:
     - name: Gather device facts
@@ -34,9 +35,7 @@
  
     - name: Show initialization status
       debug:
-        msg: >-
-          Router {{ inventory_hostname }} initialization status:
-          {{ 'INITIALIZED - proceeding' if router_initialized else 'NOT INITIALIZED - skipping config push' }}
+        msg: "Router {{ inventory_hostname }} initialization status: {{ 'INITIALIZED - proceeding' if router_initialized else 'NOT INITIALIZED - skipping config push' }}"
  
     - name: Push local auth / SSH access configuration
       when: router_initialized
