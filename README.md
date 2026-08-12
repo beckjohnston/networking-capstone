@@ -1,8 +1,6 @@
 # networking-capstone
 ## Network Infrastructure
-<img width="1100" height="712" alt="Screenshot 2026-08-12 110855" src="https://github.com/user-attachments/assets/9cd8881a-d0e1-4aa7-939a-db458285e69d" />
-
-
+<img width="1105" height="712" alt="Screenshot 2026-08-12 111610" src="https://github.com/user-attachments/assets/e4798d76-ef79-4615-9f24-942756e9bd08" />
 
 
 ## To Do
