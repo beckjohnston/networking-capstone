@@ -43,10 +43,10 @@ crypto keyring keyring-{{ vpn_connection_id.value }}-1
   pre-shared-key address {{ router_vpn_public_ip.value }} key {{ vpn_tunnel1_preshared_key.value }}
 !
 crypto isakmp policy 200
- encr aes
- authentication pre-share
- group 2
- lifetime 28800
+  encr aes
+  authentication pre-share
+  group 2
+  lifetime 28800
 crypto isakmp keepalive 10 10 periodic
 crypto isakmp profile isakmp-{{ vpn_connection_id.value }}-1
    keyring keyring-{{ vpn_connection_id.value }}-1
