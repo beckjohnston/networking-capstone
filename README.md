@@ -61,7 +61,7 @@ Terraform uses an S3 backend for shared remote state. The state bucketis beck-ne
 
 Terraform also uses the DynamoDB table networking-capstone-tf-locksfor state locking. The table uses LockID as its partition key.Together, S3 and DynamoDB provide centralized state storage andprotection against simultaneous Terraform operations modifying the samestate.
 
-## AWS IAM and GitHub OIDC
+### AWS IAM and GitHub OIDC
 
 Terraform provisions an AWS IAM OpenID Connect provider for GitHub usingtoken.actions.githubusercontent.com. It also creates the IAM rolegha-networking-capstone-deploy, whose trust policy is restrictedaccording to the configured GitHub repository.
 
@@ -115,6 +115,16 @@ Terraform also manages the supporting infrastructure required to operatethis env
 ```
  - Runs based on the inventory file that queries the AWS account associated with terraform
 
+#### router_init
+ - Runs the initial configuration onto the router.
+
+ ```
+   ansible-playbook \
+      -i ansible/inventory/aws_ec2.yml \
+      ansible/playbooks/router_config.yml
+```  
+ - Reloads at the end of the script, so it will take several minutes before the router is able to be accessed again
+
 #### router_config
  - Imports and runs the router_config.j2 template onto the Cisco Catalyst 8000V router.
 
@@ -123,7 +133,6 @@ Terraform also manages the supporting infrastructure required to operatethis env
 ```
    ansible-playbook \
       -i ansible/inventory/aws_ec2.yml \
-      -e "ansible_ssh_private_key_file=${{ secrets.EC2_INSTANCES_PRIVATE_KEY }}" \
       ansible/playbooks/router_config.yml
 ```  
 
