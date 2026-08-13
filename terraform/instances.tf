@@ -154,4 +154,28 @@ resource "aws_instance" "router" {
     Name = "catalyst-router"
     Role = "router"
   }
+
+
+
+}
+
+#demo resource
+resource "aws_instance" "demo" {
+  ami           = data.aws_ami.amazon_linux.id
+  instance_type = "t2.micro"
+
+  subnet_id = aws_subnet.app_public.id
+
+  vpc_security_group_ids = [
+    aws_security_group.bastion.id
+  ]
+
+  key_name = var.key_name
+
+  associate_public_ip_address = true
+
+  tags = {
+    Name = "capstone-demo-instance"
+    Role = "demo"
+  }
 }
