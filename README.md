@@ -282,6 +282,14 @@
 - Detects configuration drift and creates a github issue.
 - The issue can only be resolved through a pull request to fix the drift.
 
+### Manual redeploy from `stable`
+- `terraform.yml` and `ansible.yml` accept a `deployment_ref` input on manual runs.
+- Set `deployment_ref` to `stable` to redeploy the last tagged stable version, or choose any other git ref or tag you want to roll back to.
+- Pull request runs still use the current branch state.
+
+
+Transit ASN: 64512
+
 ## Links  
 
 [Powerpoint](https://onedrive.live.com/:p:/g/personal/2dc866dcd3e1fe1d/IQCzgyaUMomDQZJtofj93lLDATa5H89nk-nIbJanmtNGYMY?rtime=_v-9K4Dt3kg&redeem=aHR0cHM6Ly8xZHJ2Lm1zL3AvYy8yZGM4NjZkY2QzZTFmZTFkL0lRQ3pneWFVTW9tRFFaSnRvZmo5M2xMREFUYTVIODluay1uSWJKYW5tdE5HWU1ZP2U9Q1ZyZFcz)
