@@ -25,7 +25,7 @@
         host: "{{ ansible_host }}"
         port: 22
         delay: 60
-        timeout: 900
+        timeout: 3600
         state: started
       delegate_to: localhost
 

@@ -27,7 +27,7 @@
       ansible.builtin.wait_for:
         host: local.database.app
         port: 22
-        timeout: 10
+        timeout: 60
         state: started
 
     - name: Show result
