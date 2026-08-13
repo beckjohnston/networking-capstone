@@ -20,11 +20,25 @@
 
   tasks:
 
+    - name: Wait for router to come back after reload
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: 22
+        delay: 60
+        timeout: 3600
+        state: started
+      delegate_to: localhost
+
     - name: Get show version
       cisco.ios.ios_command:
         commands:
           - show version
       register: version_output
+      retries: 5
+      delay: 30
+      until: version_output is succeeded
+      vars:
+        ansible_command_timeout: 3600
 
     - name: Render base config from template
       ansible.builtin.template:
