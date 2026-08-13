@@ -122,28 +122,6 @@ jobs:
                 body: output,
               });
 
-      - name: Setup Terraform
-        if: (github.event.inputs.playbook == 'router_config.yml' || github.event.inputs.playbook == 'router_init.yml') || github.event_name == 'pull_request'
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Terraform init
-        if: (github.event.inputs.playbook == 'router_config.yml' || github.event.inputs.playbook == 'router_init.yml') || github.event_name == 'pull_request'
-        working-directory: ./terraform   
-        run: terraform init
-              
-      - name: Run router init playbook
-        if: env.PLAYBOOK == 'router_init.yml' || github.event_name == 'pull_request'
-        env:
-          ANSIBLE_HOST_KEY_CHECKING: "False"
-          ANSIBLE_CONFIG: ansible/ansible.cfg
-        run: |
-            ansible-galaxy collection install cisco.ios
-            ansible-playbook \
-              -i ansible/inventory/aws_ec2.yml \
-              -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
-              -e "cisco_password=${{ secrets.CISCO_PASSWORD }}" \
-              ansible/playbooks/router_init.yml
-
       - name: Run verify playbook
         if: env.PLAYBOOK  == 'verify_connectivity.yml' || github.event_name == 'pull_request'
         env:
@@ -166,6 +144,28 @@ jobs:
           -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
           -e "grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" \
           ansible/playbooks/install_observability.yml
+
+      - name: Setup Terraform
+        if: (github.event.inputs.playbook == 'router_config.yml' || github.event.inputs.playbook == 'router_init.yml') || github.event_name == 'pull_request'
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform init
+        if: (github.event.inputs.playbook == 'router_config.yml' || github.event.inputs.playbook == 'router_init.yml') || github.event_name == 'pull_request'
+        working-directory: ./terraform   
+        run: terraform init
+              
+      - name: Run router init playbook
+        if: env.PLAYBOOK == 'router_init.yml' || github.event_name == 'pull_request'
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_CONFIG: ansible/ansible.cfg
+        run: |
+            ansible-galaxy collection install cisco.ios
+            ansible-playbook \
+              -i ansible/inventory/aws_ec2.yml \
+              -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
+              -e "cisco_password=${{ secrets.CISCO_PASSWORD }}" \
+              ansible/playbooks/router_init.yml
 
       - name: Run router config playbook
         if: env.PLAYBOOK == 'router_config.yml' || github.event_name == 'pull_request'
