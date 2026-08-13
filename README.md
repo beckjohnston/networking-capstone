@@ -152,7 +152,8 @@
  - This allows the Terraform-managed AWS infrastructure to provide the network values required for configuration of the Cisco side without hard-coding deployed AWS resource identifiers elsewhere.
 
 ### Network Infrastructure Diagram
-<img width="1105" height="712" alt="Screenshot 2026-08-12 111610" src="https://github.com/user-attachments/assets/e4798d76-ef79-4615-9f24-942756e9bd08" />
+<img width="1171" height="769" alt="image" src="https://github.com/user-attachments/assets/fe7b1442-dfb7-413a-b91a-9d33b19e7f4e" />
+
 
 ## Ansible
 ### Inventory
