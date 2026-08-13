@@ -81,26 +81,32 @@ jobs:
           ANSIBLE_CONFIG: ansible/ansible.cfg
         run : |
             OUTPUT=$(
-              echo "verify_conenctivity.yml dry run: " 
+              echo "=================== VERIFY_CONNECTIVITY DRY RUN =====================" 
               ansible-playbook --check --diff \
               -i ansible/inventory/aws_ec2.yml \
               -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
               ansible/playbooks/${{ env.PLAYBOOK }} 2>&1
               
-              echo "install_observability.yml dry run: " 
+              echo "=================== INSTALL_OBSERVABILITY.YML DRY RUN =====================" 
               ansible-playbook --check --diff \
               -i ansible/inventory/aws_ec2.yml \
               -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
               -e "grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" \
               ansible/playbooks/install_observability.yml
-              
-              echo "router_config.yml dry run: " 
+
+              echo "=================== ROUTER_INIT.YML DRY RUN ====================="
               ansible-galaxy collection install cisco.ios
-              mkdir "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all"
-              terraform -chdir=terraform output -json > "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all/output.json"
-              ansible-playbook --check --diff\
+              ansible-playbook --check --diff \
               -i ansible/inventory/aws_ec2.yml \
               -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
+              -e "cisco_password=${{ secrets.CISCO_PASSWORD }}" \
+              ansible/playbooks/router_init.yml
+              
+              echo "=================== ROUTER_CONFIG.YML DRY RUN =====================" 
+              ansible-galaxy collection install cisco.ios
+              ansible-playbook --check --diff\
+              -i ansible/inventory/aws_ec2.yml \
+              -e "cisco_password=${{ secrets.CISCO_PASSWORD }}" \
               ansible/playbooks/router_config.yml
               ) || true
               echo "ansible_output<<EOF" >> $GITHUB_OUTPUT
