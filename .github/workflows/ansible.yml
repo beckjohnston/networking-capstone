@@ -17,8 +17,10 @@ on:
           - install_observability.yml
           - router_config.yml
           - router_init.yml
-  pull_request:
-    branches: [ main ]
+  workflow_run:
+    workflows: ["Terraform"]
+    types:
+      - completed
 
 permissions:
   contents: read
@@ -144,7 +146,7 @@ jobs:
           ansible-playbook \
             -i ansible/inventory/aws_ec2.yml \
             -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
-            ansible/playbooks/${{ github.event.inputs.playbook }}
+            ansible/playbooks/verify_connectivity.yml
 
       - name: Run install observability playbook
         if: github.event.inputs.playbook  == 'install_observability.yml' || github.event_name == 'pull_request'
