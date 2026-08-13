@@ -134,7 +134,7 @@ jobs:
           ansible-playbook \
             -i ansible/inventory/aws_ec2.yml \
             -e "ansible_ssh_private_key_file=${{ env.KEY_PATH }}" \
-            ansible/playbooks/${{ env.PLAYBOOK }}
+            ansible/playbooks/verify_connectivity.yml
 
       - name: Run install observability playbook
         if: env.PLAYBOOK  == 'install_observability.yml' || github.event_name == 'pull_request'
