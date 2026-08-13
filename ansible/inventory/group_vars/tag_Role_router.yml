@@ -7,5 +7,7 @@ ansible_become: yes
 ansible_become_method: enable
 ansible_become_password: "{{ cisco_password }}"
 ansible_paramiko_look_for_keys: false
-ansible_command_timeout: 60
-ansible_connect_timeout: 60
+ansible_command_timeout: 600
+ansible_connect_timeout: 600
+persistent_connect_timeout: 600
+persistent_command_timeout: 600
