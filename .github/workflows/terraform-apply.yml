@@ -1,30 +1,58 @@
-name: Terraform Apply (main)
+name: Terraform + Ansible Orchestration
 
 
 on:
+  workflow_dispatch:
+    inputs:
+      deployment_ref:
+        description: "Git ref or tag to deploy (defaults to stable)"
+        required: false
+        default: "stable"
+        type: string
+      playbook:
+        description: "Ansible playbook to run after Terraform succeeds"
+        required: true
+        default: "verify_connectivity.yml"
+        type: choice
+        options:
+          - verify_connectivity.yml
+          - install_observability.yml
+          - router_config.yml
+          - router_init.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - "ansible/**"
+      - ".github/workflows/terraform-apply.yml"
+      - ".github/workflows/terraform.yml"
+      - ".github/workflows/ansible.yml"
   push:
     branches: [main]
     paths:
       - "terraform/**"
+      - "ansible/**"
+      - ".github/workflows/terraform-apply.yml"
+      - ".github/workflows/terraform.yml"
+      - ".github/workflows/ansible.yml"
 
 concurrency:
-  group: terraform-apply-main
+  group: terraform-ansible-orchestration-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: false 
 
 jobs:
-  plan:
-    uses: ./.github/workflows/reusable-terraform.yml
+  terraform:
+    uses: ./.github/workflows/terraform.yml
     with:
-      command: plan
-      working-directory: terraform
+      deployment_ref: ${{ github.event.inputs.deployment_ref || 'stable' }}
+      action: apply
     secrets: inherit
 
-  apply:
-    needs: plan
-    if: needs.plan.outputs.exitcode == '2' 
-    uses: ./.github/workflows/reusable-terraform.yml
+  ansible:
+    needs: terraform
+    if: needs.terraform.result == 'success'
+    uses: ./.github/workflows/ansible.yml
     with:
-      command: apply
-      working-directory: terraform
-      environment: production
+      deployment_ref: ${{ github.event.inputs.deployment_ref || 'stable' }}
+      playbook: ${{ github.event.inputs.playbook || 'verify_connectivity.yml' }}
     secrets: inherit
