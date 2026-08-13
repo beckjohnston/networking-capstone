@@ -39,6 +39,12 @@
       until: version_output is succeeded
       vars:
         ansible_command_timeout: 3600
+        
+    - name: Remove old rendered config file
+      ansible.builtin.file:
+        path: /tmp/router_config.cfg
+        state: absent
+      delegate_to: localhost
 
     - name: Render base config from template
       ansible.builtin.template:
