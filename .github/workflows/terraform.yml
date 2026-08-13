@@ -29,8 +29,6 @@ on:
           - apply
           - destroy
           - plan
-  pull_request:
-    branches: [ main ]
 
 permissions:
   contents: read
