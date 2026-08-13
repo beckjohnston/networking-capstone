@@ -2,7 +2,7 @@
 - [ ] Terraform project
 - [ ] Ansible files
 - [ ] GitHub Actions/CI CD
-- [X] Presentation work
+- [ ] Presentation work
 - [X] Create a diagram for the README/presentation
 - [ ] Create a backup video 
 
