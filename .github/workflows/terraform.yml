@@ -1,6 +1,18 @@
 name: Terraform
 
 on:
+  workflow_call:
+    inputs:
+      deployment_ref:
+        description: "Git ref or tag to deploy (defaults to stable)"
+        required: false
+        default: "stable"
+        type: string
+      action:
+        description: "plan, apply or destroy"
+        required: true
+        default: "apply"
+        type: string
   workflow_dispatch: 
     inputs:
       deployment_ref:
@@ -27,7 +39,7 @@ permissions:
 env:
   TF_VERSION: "1.10.x"
   WORKING_DIR: ./terraform
-  DEPLOYMENT_REF: ${{ github.event.inputs.deployment_ref || 'stable' }}
+  DEPLOYMENT_REF: ${{ inputs.deployment_ref || github.event.inputs.deployment_ref || 'stable' }}
 
 jobs:
   terraform-plan:
@@ -36,7 +48,9 @@ jobs:
     if: >
       github.event_name == 'pull_request' ||
       (github.event_name == 'workflow_dispatch' &&
-       (github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply'))
+       (github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply')) ||
+      (github.event_name == 'workflow_call' &&
+       (inputs.action == 'plan' || inputs.action == 'apply'))
     defaults:
       run:
         working-directory: ${{ env.WORKING_DIR }}
@@ -44,12 +58,12 @@ jobs:
     steps:
       - name: Checkout selected deployment ref
         uses: actions/checkout@v4
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         with:
           ref: ${{ env.DEPLOYMENT_REF }}
 
       - uses: actions/checkout@v4
-        if: github.event_name != 'workflow_dispatch'
+        if: github.event_name != 'workflow_dispatch' && github.event_name != 'workflow_call'
 
       - uses: hashicorp/setup-terraform@v3
         with:
@@ -105,7 +119,10 @@ jobs:
     name: Apply
     runs-on: ubuntu-latest
     needs: approval
-    if: github.event.inputs.action == 'apply' || github.event_name == 'pull_request'
+    if: >
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply') ||
+      (github.event_name == 'workflow_call' && inputs.action == 'apply')
     defaults:
       run:
         working-directory: ${{ env.WORKING_DIR }}
@@ -113,12 +130,12 @@ jobs:
     steps:
       - name: Checkout selected deployment ref
         uses: actions/checkout@v4
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         with:
           ref: ${{ env.DEPLOYMENT_REF }}
 
       - uses: actions/checkout@v4
-        if: github.event_name != 'workflow_dispatch'
+        if: github.event_name != 'workflow_dispatch' && github.event_name != 'workflow_call'
 
       - uses: hashicorp/setup-terraform@v3
         with:
@@ -144,7 +161,9 @@ jobs:
   terraform-destroy:
     name: Destroy
     runs-on: ubuntu-latest
-    if: github.event.inputs.action == 'destroy'
+    if: >
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy') ||
+      (github.event_name == 'workflow_call' && inputs.action == 'destroy')
     needs: approval
     defaults:
       run:
@@ -153,12 +172,12 @@ jobs:
     steps:
       - name: Checkout selected deployment ref
         uses: actions/checkout@v4
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         with:
           ref: ${{ env.DEPLOYMENT_REF }}
 
       - uses: actions/checkout@v4
-        if: github.event_name != 'workflow_dispatch'
+        if: github.event_name != 'workflow_dispatch' && github.event_name != 'workflow_call'
 
       - uses: hashicorp/setup-terraform@v3
         with:
