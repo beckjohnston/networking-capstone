@@ -111,12 +111,12 @@ jobs:
               });
 
       - name: Setup Terraform
-        if: github.event.inputs.playbook == 'router_config.yml' || github.event.inputs.playbook == 'router_init.yml'
+        if: (github.event.inputs.playbook == 'router_config.yml' || github.event.inputs.playbook == 'router_init.yml') || github.event_name == 'pull_request'
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform init
-        if: github.event.inputs.playbook == 'router_config.yml' || github.event.inputs.playbook == 'router_init.yml'
-        working-directory: ./terraform   # adjust to wherever your .tf files live
+        if: (github.event.inputs.playbook == 'router_config.yml' || github.event.inputs.playbook == 'router_init.yml') || github.event_name == 'pull_request'
+        working-directory: ./terraform   
         run: terraform init
               
       - name: Run router init playbook
