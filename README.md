@@ -95,35 +95,61 @@
 
  - This gives the project a Terraform-managed path from the Cisco Catalyst router through the Site-to-Site VPN to AWS Transit Gateway, while also connecting all three project VPCs to the Transit Gateway.
 
-### Security Groups
+### Security
+#### Security Groups
 
-Terraform creates separate security groups for the major infrastructure roles. The bastion security group permits SSH access and outbound connectivity. The application security group allows SSH access from the bastion and permits TCP port 9100 traffic used by the application's monitoring architecture. Grafana has a dedicated security group that permits TCP port 3000, while Prometheus has its own rules for monitoring-related traffic.
+ - Creates separate security groups for the major infrastructure roles. 
+ - Bastion security group permits SSH access and outbound connectivity. 
+ - Application security group allows SSH access from the bastion and permits TCP port 9100 traffic used by the application's monitoring architecture.
+ - Grafana has a dedicated security group that permits TCP port 3000, while Prometheus has its own rules for monitoring-related traffic.
+ -  Cisco router uses a dedicated router security group that permits SSH on TCP port 22 and BGP on TCP port 179, with outbound traffic permitted. 
+ 
+ - Together with disabled EC2 source/destination checking, these rules allow the Catalyst instance to function as routing infrastructure rather than as a standard application host.
 
-The Cisco router uses a dedicated router security group. It permits SSH on TCP port 22 and BGP on TCP port 179, with outbound traffic permitted. Together with disabled EC2 source/destination checking, these rules allow the Catalyst instance to function as routing infrastructure rather than as a standard application host.
+#### SSH Key Infrastructure
 
-### SSH Key Infrastructure
+ - Defines a 4096-bit RSA private key using the TLS provider. 
+ - The public portion of the generated key is registered with AWS as an EC2 keypair, while the private portion is stored in AWS Systems Manager Parameter Store as an encrypted Secure String.
 
-Terraform defines a 4096-bit RSA private key using the TLS provider. The public portion of the generated key is registered with AWS as an EC2 keypair, while the private portion is stored in AWS Systems Manager Parameter Store as an encrypted Secure String.
+ - The intended parameter path is **/networking-capstone/dev/ssh-key**. This design keeps the generated private key in AWS rather than storing it directly in the Git repository while allowing the EC2 infrastructure to use the corresponding public key.
 
-The intended parameter path is /networking-capstone/dev/ssh-key. This design keeps the generated private key in AWS rather than storing it directly in the Git repository while allowing the EC2 infrastructure to use the corresponding public key.
+### Miscellaneous
+#### Terraform Remote State
 
-### Terraform Remote State
+ - Uses an S3 backend for shared remote state. 
+ - The state bucket is **beck-networking-capstone-tfstate-2026**, and the state object is stored at **networking-capstone/terraform.tfstate**. 
+ - The S3 state infrastructure uses versioning, public-access blocking, server-side encryption, and deletion protection.
 
-Terraform uses an S3 backend for shared remote state. The state bucket is beck-networking-capstone-tfstate-2026, and the state object is stored at networking-capstone/terraform.tfstate. The S3 state infrastructure uses versioning, public-access blocking, server-side encryption, and deletion protection.
+ - Also uses the DynamoDB table **networking-capstone-tf-locks** for state locking. 
+ - The table uses LockID as its partition key. Together, S3 and DynamoDB provide centralized state storage and protection against simultaneous Terraform operations modifying the same state.
 
-Terraform also uses the DynamoDB table networking-capstone-tf-locksfor state locking. The table uses LockID as its partition key. Together, S3 and DynamoDB provide centralized state storage and protection against simultaneous Terraform operations modifying the same state.
+#### AWS IAM and GitHub OIDC
 
-### AWS IAM and GitHub OIDC
+ - Provisions an AWS IAM OpenID Connect provider for GitHub using **token.actions.githubusercontent.com**. 
+ - It also creates the IAM role **gha-networking-capstone-deploy**, whose trust policy is restricted according to the configured GitHub repository.
 
-Terraform provisions an AWS IAM OpenID Connect provider for GitHub usingtoken.actions.githubusercontent.com. It also creates the IAM role gha-networking-capstone-deploy, whose trust policy is restricted according to the configured GitHub repository.
+ - The role has AWS PowerUserAccess attached. 
+ - This provides the AWS identity and permissions used by the project's Terraform pipeline without requiring permanent AWS access keys to be embedded directly in the repository configuration.
 
-The role has AWS PowerUserAccess attached. This infrastructure provides the AWS identity and permissions used by the project's Terraform pipeline without requiring permanent AWS access keys to be embedded directly in the repository configuration.
+#### Terraform Outputs
 
-### Terraform Outputs
+ - exposes the identifiers and addresses needed to reference the deployed infrastructure.
+ -  These outputs include:
+      - 3 VPC IDs
+      - 6 subnet IDs
+      - 5 security group IDs
+      - All public and private EC2 addresses
+      - NAT Gateway information
+      - router management and inside-interface addresses
+      - router VPN Elastic IP
+      - Transit Gateway ID and ASN
+      - Customer Gateway ID
+      - VPN connection ID
+      - AWS and Cisco-side addresses for both VPN tunnels.
 
-Terraform exposes the identifiers and addresses needed to reference the deployed infrastructure. These outputs include the three VPC IDs, subnet IDs, security group IDs, public and private EC2 addresses, NAT Gateway information, router management and inside-interface addresses, the router VPN Elastic IP, Transit Gateway ID and ASN, Customer Gateway ID,VPN connection ID, and the AWS-side and Cisco-side addresses for both VPN tunnels.
-
-The BGP-related outputs are particularly important because they expose the values generated or managed by the AWS infrastructure. The Transit Gateway ASN identifies the AWS autonomous system, while the VPN tunnel outputs identify the AWS and Cisco BGP peer addresses for each tunnel. This allows the Terraform-managed AWS infrastructure to provide the network values required for configuration of the Cisco side without hard-coding deployed AWS resource identifiers elsewhere.
+ - BGP-related outputs are particularly important because they expose the values generated or managed by the AWS infrastructure for use in the router configuration. 
+ - The Transit Gateway ASN identifies the AWS autonomous system, while the VPN tunnel outputs identify the AWS and Cisco BGP peer addresses for each tunnel. 
+ - This allows the Terraform-managed AWS infrastructure to provide the network values required for configuration of the Cisco side without hard-coding deployed AWS resource identifiers elsewhere.
 
 ### Network Infrastructure Diagram
 <img width="1105" height="712" alt="Screenshot 2026-08-12 111610" src="https://github.com/user-attachments/assets/e4798d76-ef79-4615-9f24-942756e9bd08" />
@@ -225,22 +251,32 @@ The BGP-related outputs are particularly important because they expose the value
           **SEE [LINKS](#links) FOR CISCO CATALYST TRANSIT GATEWAY DOCUMENTATION**
 
 ## GitHub Actions
-### ansible.yml
+### Ansible
  - Triggered by a pull request on the main branch for automated deployment.
  - Manually triggered on the test branch for debugging.
  - Performs a dry run and posts output as a comment in the pull request.
  - Runs the ansible playbooks.
 
-### terraform.yml
-- Triggered by a pull request on the main branch for automated deployment.
-- Manually triggered on the test branch for debugging.
-- Takes input of plan, apply, or destroy to determine which terraform command to run.
-- Posts terraform plan output as a comment in the pull request before applying changes.
-- Runs terraform init and validate before planning or applying.
-- Allows for a terraform destroy option for the clean deletion of resources.
+ - Manual options include
+      - verfiy_connectivity.yml
+      - install_observability.yml
+      - router_init.yml
+      - router_config.yml
 
+### Terraform
+ - Triggered by a pull request on the main branch for automated deployment.
+ - Manually triggered on the test branch for debugging.
+ - Takes input of plan, apply, or destroy to determine which terraform command to run.
+ - Posts terraform plan output as a comment in the pull request before applying changes.
+ - Runs terraform init and validate before planning or applying.
+ - Allows for a terraform destroy option for the clean deletion of resources.
 
-### terraform-drift.yml
+ - Manual Options Include
+      - plan
+      - apply
+      - destroy
+
+### Terraform Drift Detection
 - Cron job that runs every 6 hours.
 - Manual trigger for testing.
 - Detects configuration drift and creates a github issue.
