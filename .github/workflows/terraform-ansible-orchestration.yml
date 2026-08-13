@@ -36,6 +36,9 @@ on:
       - ".github/workflows/terraform.yml"
       - ".github/workflows/ansible.yml"
 
+permissions:
+  pull-requests: write
+
 concurrency:
   group: terraform-ansible-orchestration-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: false 
