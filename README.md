@@ -282,9 +282,6 @@
 - Detects configuration drift and creates a github issue.
 - The issue can only be resolved through a pull request to fix the drift.
 
-
-Transit ASN: 64512
-
 ## Links  
 
 [Powerpoint](https://onedrive.live.com/:p:/g/personal/2dc866dcd3e1fe1d/IQCzgyaUMomDQZJtofj93lLDATa5H89nk-nIbJanmtNGYMY?rtime=_v-9K4Dt3kg&redeem=aHR0cHM6Ly8xZHJ2Lm1zL3AvYy8yZGM4NjZkY2QzZTFmZTFkL0lRQ3pneWFVTW9tRFFaSnRvZmo5M2xMREFUYTVIODluay1uSWJKYW5tdE5HWU1ZP2U9Q1ZyZFcz)
