@@ -26,9 +26,7 @@ on:
           - install_observability.yml
           - router_config.yml
           - router_init.yml
-  pull_request:
-    branches: [ main ]
-
+  
 permissions:
   contents: read
   pull-requests: write
