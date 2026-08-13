@@ -111,7 +111,7 @@ jobs:
         uses: trstringer/manual-approval@v1
         with:
           secret: ${{ secrets.TOKEN }}
-          approvers: aowens04
+          approvers: aowens04, beckjohnston
             
   terraform-apply:
     name: Apply
