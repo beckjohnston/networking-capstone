@@ -17,10 +17,8 @@ on:
           - install_observability.yml
           - router_config.yml
           - router_init.yml
-  workflow_run:
-    workflows: ["Terraform"]
-    types:
-      - completed
+  pull_request:
+    branches: main
 
 permissions:
   contents: read
