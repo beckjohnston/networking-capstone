@@ -101,10 +101,11 @@ jobs:
       - name: Post dry run to PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
-        with: 
+        env:
+          ANSIBLE_OUTPUT: ${{ steps.ansible.outputs.ansible_output }}
+        with:
           script: |
-            const output = `\`\`\`${{ steps.ansible.outputs.ansible_output }}\`\`\``;
-
+            const output = "```\n" + process.env.ANSIBLE_OUTPUT + "\n```";
             await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
