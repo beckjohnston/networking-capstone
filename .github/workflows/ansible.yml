@@ -101,8 +101,11 @@ jobs:
               
               echo "=================== ROUTER_CONFIG.YML DRY RUN =====================" 
               ansible-galaxy collection install cisco.ios
-              ansible-playbook --check --diff \
+              mkdir "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all"
+              terraform -chdir=terraform output -json > "${GITHUB_WORKSPACE}/ansible/inventory/group_vars/all/output.json"
+              ansible-playbook \
               -i ansible/inventory/aws_ec2.yml \
+              -e "ansible_ssh_private_key_file=" \
               -e "cisco_password=${{ secrets.CISCO_PASSWORD }}" \
               ansible/playbooks/router_config.yml
               ) || true
