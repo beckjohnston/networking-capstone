@@ -18,7 +18,6 @@ on:
         default: "stable"
         type: string
       playbook:
-        description: "Playbook to run (relative to ansible/playbooks/)"
         required: true
         default: "verify_connectivity.yml"
         type: choice
@@ -124,12 +123,12 @@ jobs:
               });
 
       - name: Setup Terraform
-        if: env.PLAYBOOK == 'router_config.yml' || env.PLAYBOOK == 'router_init.yml'
+        if: (github.event.inputs.playbook == 'router_config.yml' || github.event.inputs.playbook == 'router_init.yml') || github.event_name == 'pull_request'
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform init
-        if: env.PLAYBOOK == 'router_config.yml' || env.PLAYBOOK == 'router_init.yml'
-        working-directory: ./terraform   # adjust to wherever your .tf files live
+        if: (github.event.inputs.playbook == 'router_config.yml' || github.event.inputs.playbook == 'router_init.yml') || github.event_name == 'pull_request'
+        working-directory: ./terraform   
         run: terraform init
               
       - name: Run router init playbook
