@@ -35,7 +35,6 @@ env:
   KEY_PATH: /tmp/ec2-key.pem
   DEPLOYMENT_REF: ${{ inputs.deployment_ref || github.event.inputs.deployment_ref || 'stable' }}
   PLAYBOOK: ${{ inputs.playbook || github.event.inputs.playbook || 'verify_connectivity.yml' }}
-#  SSM_KEY_PARAMETER: /capstone/dev/ssh-key
 
 jobs:
   run-playbook:
