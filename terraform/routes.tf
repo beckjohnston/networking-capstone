@@ -29,14 +29,15 @@ resource "aws_internet_gateway" "network" {
 resource "aws_route_table" "app_public" {
   vpc_id = aws_vpc.app.id
 
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.app.id
-  }
-
   tags = {
     Name = "app-public-route"
   }
+}
+
+resource "aws_route" "app_public_default" {
+  route_table_id         = aws_route_table.app_public.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.app.id
 }
 
 
