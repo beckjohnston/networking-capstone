@@ -219,6 +219,11 @@ Terraform also manages the supporting infrastructure required to operate this en
 - Detects configuration drift and creates a github issue.
 - The issue can only be resolved through a pull request to fix the drift.
 
+### Manual redeploy from `stable`
+- `terraform.yml` and `ansible.yml` accept a `deployment_ref` input on manual runs.
+- Set `deployment_ref` to `stable` to redeploy the last tagged stable version, or choose any other git ref or tag you want to roll back to.
+- Pull request runs still use the current branch state.
+
 
 Transit ASN: 64512
 
