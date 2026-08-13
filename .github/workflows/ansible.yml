@@ -4,7 +4,6 @@ on:
   workflow_dispatch: 
     inputs:
       playbook:
-        description: "Playbook to run (relative to ansible/playbooks/)"
         required: true
         default: "verify_connectivity.yml"
         type: choice
