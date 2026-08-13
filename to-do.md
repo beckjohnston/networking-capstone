@@ -4,6 +4,7 @@
 - [ ] GitHub Actions/CI CD
 - [ ] Presentation work
 - [X] Create a diagram for the README/presentation
+- [ ] Create a backup video 
 
 ## Terraform Project
 Create a terraform project
