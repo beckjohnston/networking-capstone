@@ -106,9 +106,20 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue create \
-            --title "Terraform drift detected" \
-            --body-file drift-plan.txt
+          MAX_CHARS=65536
+          CHAR_COUNT=$(wc -c < drift-plan.txt)
+
+          if [ "$CHAR_COUNT" -ge "$MAX_CHARS" ]; then
+            echo "Drift plan output is $CHAR_COUNT characters, exceeding GitHub's $MAX_CHARS character issue body limit."
+            echo "This is most likely not real drift, but rather Terraform failing to run correctly (e.g. auth error, provider crash, or a plan against the wrong state/workspace)."
+            gh issue create \
+              --title "Terraform drift detected (plan output too large to display)" \
+              --body "Terraform drift check produced a plan output of $CHAR_COUNT characters, which exceeds GitHub's issue body limit of $MAX_CHARS characters. This is most likely not active drift — check the workflow logs, as Terraform is likely failing to run correctly rather than reporting genuine drift."
+          else
+            gh issue create \
+              --title "Terraform drift detected" \
+              --body-file drift-plan.txt
+          fi
 
       - name: Fail Workflow if Drift Exists
         if: steps.drift.outputs.exitcode == '2'

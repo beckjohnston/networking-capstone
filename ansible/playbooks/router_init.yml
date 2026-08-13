@@ -11,7 +11,7 @@
 #   ansible-playbook \
 #     -i ansible/inventory/aws_ec2.yml \
 #     -e "ansible_ssh_private_key_file=${{ secrets.EC2_INSTANCES_PRIVATE_KEY }}" \
-#     -e "cisco_password=${{ secrets.cisco_password }}"
+#     -e "cisco_password=${{ secrets.CISCO_PASSWORD }}"
 #     ansible/playbooks/router_init.yml
  
 - name: Push post-initialization config to Catalyst router
@@ -21,6 +21,7 @@
   vars:
     ansible_network_os: cisco.ios.ios
     ansible_connection: network_cli
+    ansible_user: ec2-user
  
   tasks:
     - name: Gather device facts
@@ -34,9 +35,7 @@
  
     - name: Show initialization status
       debug:
-        msg: >-
-          Router {{ inventory_hostname }} initialization status:
-          {{ 'INITIALIZED - proceeding' if router_initialized else 'NOT INITIALIZED - skipping config push' }}
+        msg: "Router {{ inventory_hostname }} initialization status: {{ 'INITIALIZED - proceeding' if router_initialized else 'NOT INITIALIZED - skipping config push' }}"
  
     - name: Push local auth / SSH access configuration
       when: router_initialized
