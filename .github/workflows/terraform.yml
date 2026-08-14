@@ -103,23 +103,23 @@ jobs:
               body: output
             });
 
-  approval:
-    runs-on: ubuntu-latest
-    needs: terraform-plan
-    if: |
-      always() &&
-      (needs.terraform-plan.result == 'success' || needs.terraform-plan.result == 'skipped')
-    steps:
-      - name: Wait for Approval
-        uses: trstringer/manual-approval@v1
-        with:
-          secret: ${{ secrets.TOKEN }}
-          approvers: aowens04
+  #approval:
+   # runs-on: ubuntu-latest
+   # needs: terraform-plan
+   # if: |
+   #   always() &&
+   #   (needs.terraform-plan.result == 'success' || needs.terraform-plan.result == 'skipped')
+   # steps:
+   #   - name: Wait for Approval
+   #     uses: trstringer/manual-approval@v1
+   #     with:
+   #       secret: ${{ secrets.TOKEN }}
+   #       approvers: aowens04
             
   terraform-apply:
     name: Apply
     runs-on: ubuntu-latest
-    needs: approval
+    #needs: approval
     if: >
       github.event_name == 'pull_request' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply') ||
