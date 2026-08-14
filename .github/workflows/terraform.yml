@@ -174,8 +174,6 @@ jobs:
       - name: Checkout selected deployment ref
         uses: actions/checkout@v4
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        with:
-          ref: ${{ env.DEPLOYMENT_REF }}
 
       - uses: actions/checkout@v4
         if: github.event_name != 'workflow_dispatch' && github.event_name != 'workflow_call'
